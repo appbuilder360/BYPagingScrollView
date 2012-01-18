@@ -23,13 +23,13 @@
 		DD8B6F7014C6F1F80096EEC5 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		DD8B6F7214C6F1F80096EEC5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DD8B6F7414C6F1F80096EEC5 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		DD8B6F7814C6F1F80096EEC5 /* Paging-Info.plist */ = {isa = PBXFileReference; path = "Paging-Info.plist"; sourceTree = "<group>"; };
+		DD8B6F7814C6F1F80096EEC5 /* Paging-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Paging-Info.plist"; sourceTree = "<group>"; };
 		DD8B6F7A14C6F1F80096EEC5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DD8B6F7C14C6F1F80096EEC5 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		DD8B6F7E14C6F1F80096EEC5 /* Paging-Prefix.pch */ = {isa = PBXFileReference; path = "Paging-Prefix.pch"; sourceTree = "<group>"; };
-		DD8B6F7F14C6F1F80096EEC5 /* AppDelegate.h */ = {isa = PBXFileReference; path = AppDelegate.h; sourceTree = "<group>"; };
+		DD8B6F7E14C6F1F80096EEC5 /* Paging-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Paging-Prefix.pch"; sourceTree = "<group>"; };
+		DD8B6F7F14C6F1F80096EEC5 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		DD8B6F8014C6F1F80096EEC5 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		DD8B6F8214C6F1F80096EEC5 /* ViewController.h */ = {isa = PBXFileReference; path = ViewController.h; sourceTree = "<group>"; };
+		DD8B6F8214C6F1F80096EEC5 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		DD8B6F8314C6F1F80096EEC5 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		DD8B6F8614C6F1F80096EEC5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController_iPhone.xib; sourceTree = "<group>"; };
 		DD8B6F8914C6F1F80096EEC5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController_iPad.xib; sourceTree = "<group>"; };
@@ -251,6 +251,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Paging/Paging-Prefix.pch";
 				INFOPLIST_FILE = "Paging/Paging-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -262,6 +263,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Paging/Paging-Prefix.pch";
 				INFOPLIST_FILE = "Paging/Paging-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
