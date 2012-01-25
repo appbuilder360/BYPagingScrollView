@@ -37,7 +37,6 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(clearRecycledPages)
                                                      name:UIApplicationDidReceiveMemoryWarningNotification
                                                    object:[UIApplication sharedApplication]];
-        
     }
     return self;
 }
@@ -53,7 +52,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     [super dealloc];
 }
 
-#pragma mark - Close a property delegate from the external world
+#pragma mark - Disable delegate
 
 - (void)setDelegate:(id<UIScrollViewDelegate>)delegate
 {
@@ -67,14 +66,56 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     return nil;
 }
 
-#pragma mark - Retrieving visible pages from the source
+#pragma mark - Handle visible pages
 
 - (void)assertVisiblePages
 {
+    if (_currentPageIndex == kPageIndexNone)
+    {
+        return; // Do not request pages if none page is selected
+    }
+    
     NSLog(@"Load all visible pages for current index from the source");
 }
 
-#pragma mark - Page recycling and reusing
+- (void)resetContentOffsetAndSize
+{
+    if (_currentPageIndex == kPageIndexNone)
+    {
+        self.contentSize = CGSizeZero;
+        self.contentOffset = CGPointZero;
+        return; // Nullify content size and offset if none page is selected
+    }
+    
+    NSLog(@"Reset content offset and size to display current page");
+}
+
+- (void)layoutVisiblePages
+{
+    [_visiblePages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        
+        NSLog(@"Add page %@ (%@) to its position related to current page index %d", key, obj, _currentPageIndex);
+    }];
+}
+
+#pragma mark -
+
+- (void)resetVisiblePages
+{
+    // Reset page model to the initial state
+    _currentPageIndex = (_numberOfPages == 0 ? kPageIndexNone : 0);
+    
+    // Request pages from the source
+    [self assertVisiblePages];
+    
+    // Reset content area for the new orientation
+    [self resetContentOffsetAndSize];
+    
+    // Layout visible pages for the first time
+    [self layoutVisiblePages];
+}
+
+#pragma mark - Recycle and reuse pages
 
 - (void)recylePageWithIndex:(NSUInteger)pageIndex
 {
@@ -104,6 +145,8 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 - (void)recycleVisiblePages
 {
     [_visiblePages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        
+        // It is allowed to modify _visiblePages here, inside the block
         [self recylePageWithIndex:[key unsignedIntegerValue]];
     }];
 }
@@ -124,36 +167,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     return dequeuedPage;
 }
 
-#pragma mark - Handling scroll size and page layout
-
-- (void)resetContentOffsetAndSize
-{
-    NSLog(@"Reset content offset and size to display current page");
-}
-
-- (void)layoutVisiblePages
-{
-    NSLog(@"Add pages to their possitions according to current page index");
-}
-
-#pragma mark - Public acessors
-
-- (void)reloadVisiblePages
-{
-    // Reset page model to Initial state
-    _currentPageIndex = kPageIndexNone;
-    
-    // Request pages from the source
-    [self assertVisiblePages];
-    
-    // Reset content area for the new orientation
-    [self resetContentOffsetAndSize];
-    
-    // Layout visible pages for the first time
-    [self layoutVisiblePages];
-}
-
-#pragma mark -
+#pragma mark - Properties that reload content
 
 - (void)setPageSource:(id<BYPagingScrollViewPageSource>)newPageSource
 {
@@ -171,7 +185,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         _numberOfPages = [_pageSource numberOfPagesInScrollView:self];
         
         // Update model and view
-        [self reloadVisiblePages];
+        [self resetVisiblePages];
     }
 }
 
@@ -185,7 +199,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         [self recycleVisiblePages];
         
         // Update model and view
-        [self reloadVisiblePages];
+        [self resetVisiblePages];
     }
 }
 
