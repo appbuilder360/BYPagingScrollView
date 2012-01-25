@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "BYPagingScrollView.h"
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController <BYPagingScrollViewPageSource>
 
 @end

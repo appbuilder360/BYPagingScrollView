@@ -16,6 +16,7 @@
 		DD8B6F8414C6F1F80096EEC5 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DD8B6F8314C6F1F80096EEC5 /* ViewController.m */; };
 		DD8B6F8714C6F1F80096EEC5 /* ViewController_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD8B6F8514C6F1F80096EEC5 /* ViewController_iPhone.xib */; };
 		DD8B6F8A14C6F1F80096EEC5 /* ViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD8B6F8814C6F1F80096EEC5 /* ViewController_iPad.xib */; };
+		DD8B6F9214C6F5090096EEC5 /* BYPagingScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = DD8B6F9114C6F5090096EEC5 /* BYPagingScrollView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +34,8 @@
 		DD8B6F8314C6F1F80096EEC5 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		DD8B6F8614C6F1F80096EEC5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController_iPhone.xib; sourceTree = "<group>"; };
 		DD8B6F8914C6F1F80096EEC5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController_iPad.xib; sourceTree = "<group>"; };
+		DD8B6F9014C6F5090096EEC5 /* BYPagingScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BYPagingScrollView.h; path = Paging/BYPagingScrollView.h; sourceTree = "<group>"; };
+		DD8B6F9114C6F5090096EEC5 /* BYPagingScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BYPagingScrollView.m; path = Paging/BYPagingScrollView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +55,8 @@
 		DD8B6F6114C6F1F70096EEC5 = {
 			isa = PBXGroup;
 			children = (
+				DD8B6F9014C6F5090096EEC5 /* BYPagingScrollView.h */,
+				DD8B6F9114C6F5090096EEC5 /* BYPagingScrollView.m */,
 				DD8B6F7614C6F1F80096EEC5 /* Paging */,
 				DD8B6F6F14C6F1F80096EEC5 /* Frameworks */,
 				DD8B6F6D14C6F1F80096EEC5 /* Products */,
@@ -167,6 +172,7 @@
 				DD8B6F7D14C6F1F80096EEC5 /* main.m in Sources */,
 				DD8B6F8114C6F1F80096EEC5 /* AppDelegate.m in Sources */,
 				DD8B6F8414C6F1F80096EEC5 /* ViewController.m in Sources */,
+				DD8B6F9214C6F5090096EEC5 /* BYPagingScrollView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

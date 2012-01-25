@@ -16,12 +16,38 @@
     // Release any cached data, images, etc that aren't in use.
 }
 
+#pragma mark - BYPagingScrollViewPageSource
+
+- (NSUInteger)numberOfPagesInScrollView:(BYPagingScrollView *)scrollView
+{
+    return 0;
+}
+
+- (UIView *)scrollView:(BYPagingScrollView *)scrollView viewForPageAtIndex:(NSUInteger)pageIndex
+{
+    return nil;
+}
+
+- (void)scrollView:(BYPagingScrollView *)scrollView didScrollToPage:(NSUInteger)newPageIndex fromPage:(NSUInteger)oldPageIndex
+{
+    NSLog(@"%d -> %d", oldPageIndex, newPageIndex);
+}
+
 #pragma mark - View lifecycle
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
+    
+    self.view.opaque = YES;
+    self.view.backgroundColor = [UIColor blackColor];
+    
+    BYPagingScrollView *pager = [[BYPagingScrollView alloc] initWithFrame:CGRectInset(self.view.bounds, 20, 20)];
+    pager.opaque = YES;
+    pager.backgroundColor = [UIColor colorWithWhite:.15 alpha:1];
+    pager.pageSource = self;
+    [self.view addSubview:pager];
+    [pager release];
 }
 
 - (void)viewDidUnload
