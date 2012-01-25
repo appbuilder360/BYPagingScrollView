@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-#import "ViewController.h"
+#import "PagingViewController.h"
 
 @implementation AppDelegate
 
@@ -18,7 +18,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    UIViewController *viewController = [[[ViewController alloc] initWithNibName:nil bundle:nil] autorelease];
+    UIViewController *viewController = [[[PagingViewController alloc] initWithNibName:nil bundle:nil] autorelease];
     UINavigationController *navigationController = [[[UINavigationController alloc] initWithRootViewController:viewController] autorelease];
     
     self.window = [[[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds] autorelease];

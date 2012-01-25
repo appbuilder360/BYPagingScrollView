@@ -1,6 +1,6 @@
-#import "ViewController.h"
+#import "PagingViewController.h"
 
-@implementation ViewController
+@implementation PagingViewController
 
 #pragma mark - How to use paging scroll in the view controller
 

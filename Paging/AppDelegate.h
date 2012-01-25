@@ -2,7 +2,7 @@
 // Demo app delegate.
 //
 
-@class ViewController;
+@class PagingViewController;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
