@@ -1,22 +1,28 @@
-//
-//  ViewController.m
-//  Paging
-//
-//  Created by Вадим Шпаковский on 1/18/12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
-//
-
 #import "ViewController.h"
 
 @implementation ViewController
 
-- (void)didReceiveMemoryWarning
+#pragma mark - How to use paging scroll in the view controller
+
+- (void)loadView
 {
-    [super didReceiveMemoryWarning];
-    // Release any cached data, images, etc that aren't in use.
+    // Calculate scroll view frame as window frame minus status and navigation bars
+    CGRect scrollFrame = [UIApplication sharedApplication].keyWindow.frame;
+    scrollFrame.size.height -= CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
+    scrollFrame.size.height -= CGRectGetHeight(self.navigationController.navigationBar.frame);
+    
+    // Create scroll view
+    BYPagingScrollView *pagingScrollView = [[BYPagingScrollView alloc] initWithFrame:scrollFrame];
+    pagingScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
+    pagingScrollView.backgroundColor = [UIColor colorWithWhite:.15 alpha:1];
+    self.view = pagingScrollView;
+    [pagingScrollView release];
+    
+    // Configure scroll view in one line
+    pagingScrollView.pageSource = self;
 }
 
-#pragma mark - BYPagingScrollViewPageSource
+#pragma mark - Data source protocol for paging scroll view
 
 - (NSUInteger)numberOfPagesInScrollView:(BYPagingScrollView *)scrollView
 {
@@ -28,63 +34,35 @@
     return nil;
 }
 
+#pragma mark -
+
 - (void)scrollView:(BYPagingScrollView *)scrollView didScrollToPage:(NSUInteger)newPageIndex fromPage:(NSUInteger)oldPageIndex
 {
-    NSLog(@"%d -> %d", oldPageIndex, newPageIndex);
+    self.title = [NSString stringWithFormat:@"Page %d", newPageIndex + 1];
 }
 
-#pragma mark - View lifecycle
+#pragma mark - How to handle rotation
 
-- (void)viewDidLoad
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orientation
 {
-    [super viewDidLoad];
+    // Deny portrait upside down on iPhone
+    return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone ? orientation != UIInterfaceOrientationPortraitUpsideDown : YES);
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
     
-    self.view.opaque = YES;
-    self.view.backgroundColor = [UIColor blackColor];
+    // Notify scroll view that it is being rotated
+    [(BYPagingScrollView *)self.view beginRotation];
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
     
-    BYPagingScrollView *pager = [[BYPagingScrollView alloc] initWithFrame:CGRectInset(self.view.bounds, 20, 20)];
-    pager.opaque = YES;
-    pager.backgroundColor = [UIColor colorWithWhite:.15 alpha:1];
-    pager.pageSource = self;
-    [self.view addSubview:pager];
-    [pager release];
-}
-
-- (void)viewDidUnload
-{
-    [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
-}
-
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-}
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-	[super viewWillDisappear:animated];
-}
-
-- (void)viewDidDisappear:(BOOL)animated
-{
-	[super viewDidDisappear:animated];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    // Return YES for supported orientations
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-        return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
-    } else {
-        return YES;
-    }
+    // Notify scroll view that rotation is completed
+    [(BYPagingScrollView *)self.view endRotation];
 }
 
 @end

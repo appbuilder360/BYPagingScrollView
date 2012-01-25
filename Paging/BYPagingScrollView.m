@@ -4,21 +4,17 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 @interface BYPagingScrollView () // Private
 
+@property (nonatomic, readwrite) BOOL rotating;
+
 @end
 
 #pragma mark -
 
-@implementation BYPagingScrollView {
-@private
-    CGFloat _gapBetweenPages;            // Black interspacing between pages
-    NSUInteger _currentPageIndex;
-    NSUInteger _numberOfPages;
-    NSMutableDictionary *_visiblePages;  // { Key: NSNumber with a page index -> Value: UIView representing a page }
-    NSMutableDictionary *_recycledPages; // { Key: NSString class name of kind of pages -> Value: NSMutableSet of UIView descendants }
-}
+@implementation BYPagingScrollView
 
 @synthesize pageSource = _pageSource;
 @synthesize vertical = _vertical;
+@synthesize rotating = _rotating;
 
 #pragma mark -
 
@@ -27,8 +23,9 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     self = [super initWithFrame:frame];
     if (self)
     {
-        _currentPageIndex = kPageIndexNone;
-        _visiblePages = [[NSMutableDictionary alloc] init];
+        _minVisiblePage = kPageIndexNone;
+        _maxVisiblePage = kPageIndexNone;
+        _activePages = [[NSMutableDictionary alloc] init];
         _recycledPages = [[NSMutableDictionary alloc] init];
         
         super.delegate = self;
@@ -46,7 +43,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:UIApplicationDidReceiveMemoryWarningNotification
                                                   object:[UIApplication sharedApplication]];
-    [_visiblePages release];
+    [_activePages release];
     [_recycledPages release];
     
     [super dealloc];
@@ -68,83 +65,83 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 #pragma mark - Handle visible pages
 
-- (void)assertVisiblePages
+- (void)assertActivePages
 {
-    if (_currentPageIndex == kPageIndexNone)
+    if ((_minVisiblePage == kPageIndexNone) || (_maxVisiblePage == kPageIndexNone))
     {
-        return; // Do not request pages if none page is selected
+        return; // Do not request pages if none page is visible
     }
     
-    NSLog(@"Load all visible pages for current index from the source");
+    NSLog(@"Load from the source all active pages for current visible page indexes");
 }
 
 - (void)resetContentOffsetAndSize
 {
-    if (_currentPageIndex == kPageIndexNone)
+    if ((_minVisiblePage == kPageIndexNone) || (_maxVisiblePage == kPageIndexNone))
     {
         self.contentSize = CGSizeZero;
         self.contentOffset = CGPointZero;
         return; // Nullify content size and offset if none page is selected
     }
     
-    NSLog(@"Reset content offset and size to display current page");
+    NSLog(@"Reset content offset and size to display current visible page");
 }
 
-- (void)layoutVisiblePages
+- (void)layoutActivePages
 {
-    [_visiblePages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+    [_activePages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         
-        NSLog(@"Add page %@ (%@) to its position related to current page index %d", key, obj, _currentPageIndex);
+        NSLog(@"Add page %@ (%@) to its position related to visible page indexes %d and %d", key, obj, _minVisiblePage, _maxVisiblePage);
     }];
 }
 
 #pragma mark -
 
-- (void)resetVisiblePages
+- (void)resetActivePages
 {
     // Reset page model to the initial state
-    _currentPageIndex = (_numberOfPages == 0 ? kPageIndexNone : 0);
+    _minVisiblePage = _maxVisiblePage = (_numberOfPages == 0 ? kPageIndexNone : 0);
     
     // Request pages from the source
-    [self assertVisiblePages];
+    [self assertActivePages];
     
     // Reset content area for the new orientation
     [self resetContentOffsetAndSize];
     
-    // Layout visible pages for the first time
-    [self layoutVisiblePages];
+    // Layout active pages for the first time
+    [self layoutActivePages];
 }
 
 #pragma mark - Recycle and reuse pages
 
 - (void)recylePageWithIndex:(NSUInteger)pageIndex
 {
-    // Find a page in the visible set
+    // Find a page in the active set
     NSNumber *pageNumber = [NSNumber numberWithUnsignedInteger:pageIndex];
-    UIView *visiblePage = [_visiblePages objectForKey:pageNumber];
-    if (visiblePage)
+    UIView *activePage = [_activePages objectForKey:pageNumber];
+    if (activePage)
     {
         // Remove the page from the scroll view
-        [visiblePage removeFromSuperview];
+        [activePage removeFromSuperview];
         
         // Add the page to the recycled set
-        NSString *className = NSStringFromClass([visiblePage class]);
+        NSString *className = NSStringFromClass([activePage class]);
         NSMutableSet *classPages = [_recycledPages objectForKey:className];
         if (classPages == nil)
         {
             classPages = [NSMutableSet set];
             [_recycledPages setObject:classPages forKey:className];
         }
-        [classPages addObject:visiblePage];
+        [classPages addObject:activePage];
         
-        // Remove the page from the visible set
-        [_visiblePages removeObjectForKey:pageNumber];
+        // Remove the page from the active set
+        [_activePages removeObjectForKey:pageNumber];
     }
 }
 
-- (void)recycleVisiblePages
+- (void)recycleAllActivePages
 {
-    [_visiblePages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+    [_activePages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         
         // It is allowed to modify _visiblePages here, inside the block
         [self recylePageWithIndex:[key unsignedIntegerValue]];
@@ -176,7 +173,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         _pageSource = newPageSource;
         
         // Recycle all visible pages
-        [self recycleVisiblePages];
+        [self recycleAllActivePages];
         
         // Reset cache by removing all recycled pages
         [self clearRecycledPages];
@@ -185,7 +182,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         _numberOfPages = [_pageSource numberOfPagesInScrollView:self];
         
         // Update model and view
-        [self resetVisiblePages];
+        [self resetActivePages];
     }
 }
 
@@ -196,11 +193,38 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         _vertical = vertical;
         
         // Recycle all visible pages
-        [self recycleVisiblePages];
+        [self recycleAllActivePages];
         
         // Update model and view
-        [self resetVisiblePages];
+        [self resetActivePages];
     }
+}
+
+#pragma mark - Handling rotation
+
+- (void)beginRotation
+{
+    // Remove all pages but visible in current frame
+    [_activePages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        
+        NSUInteger pageIndex = [key unsignedIntegerValue];
+        if ((pageIndex != _minVisiblePage) && (pageIndex != _maxVisiblePage))
+        {
+            [self recylePageWithIndex:pageIndex];
+        }
+    }];
+    
+    // Set flag that should be used for better rotation handling
+    self.rotating = YES;
+}
+
+- (void)endRotation
+{
+    // Return pages removed previously back
+    [self assertActivePages];
+    
+    // Reset flag used for better rotation handling
+    self.rotating = NO;
 }
 
 @end

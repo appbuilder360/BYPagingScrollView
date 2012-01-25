@@ -9,13 +9,28 @@
 
 #pragma mark -
 
-@interface BYPagingScrollView : UIScrollView <UIScrollViewDelegate>
+@interface BYPagingScrollView : UIScrollView <UIScrollViewDelegate> {
+
+@private
+
+    NSUInteger _numberOfPages;           // Retrieved from the page source
+    NSUInteger _minVisiblePage;          // Partially visible page from the left
+    NSUInteger _maxVisiblePage;          // Partially visible page from the right
+    NSMutableDictionary *_activePages;   // Visible and invisible subviews { NSNumber *pageIndex => UIView *pageView }
+    NSMutableDictionary *_recycledPages; // Page views for dequeuing { NSString *className => NSMutableSet *pageViews }
+    
+    CGFloat _gapBetweenPages;            // Black interspacing between pages
+}
 
 @property (nonatomic, assign) id<BYPagingScrollViewPageSource>pageSource;
 
 @property (nonatomic, getter = isVertical) BOOL vertical;
+@property (nonatomic, readonly, getter = isRotating) BOOL rotating;
 
 - (UIView *)dequePageViewWithClassName:(NSString *)className;
+
+- (void)beginRotation;
+- (void)endRotation;
 
 @end
 
