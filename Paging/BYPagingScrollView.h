@@ -5,6 +5,10 @@
 // This way, you can combine horizontal and vertical scroll views supporting Zoom.
 //
 
+#define DEFAULT_GAP_BETWEEN_PAGES 20
+
+#pragma mark -
+
 @protocol BYPagingScrollViewPageSource;
 
 #pragma mark -
@@ -26,6 +30,7 @@
 
 @property (nonatomic, getter = isVertical) BOOL vertical;
 @property (nonatomic, readonly, getter = isRotating) BOOL rotating;
+@property (nonatomic) CGFloat gapBetweenPages;
 
 - (UIView *)dequePageViewWithClassName:(NSString *)className;
 

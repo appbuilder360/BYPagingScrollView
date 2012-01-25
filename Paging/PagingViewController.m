@@ -1,4 +1,5 @@
 #import "PagingViewController.h"
+#import "ColorView.h"
 
 @implementation PagingViewController
 
@@ -14,7 +15,8 @@
     // Create scroll view
     BYPagingScrollView *pagingScrollView = [[BYPagingScrollView alloc] initWithFrame:scrollFrame];
     pagingScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-    pagingScrollView.backgroundColor = [UIColor colorWithWhite:.15 alpha:1];
+    pagingScrollView.opaque = YES;
+    pagingScrollView.backgroundColor = [UIColor blackColor];
     self.view = pagingScrollView;
     [pagingScrollView release];
     
@@ -26,12 +28,19 @@
 
 - (NSUInteger)numberOfPagesInScrollView:(BYPagingScrollView *)scrollView
 {
-    return 0;
+    return 2;
 }
 
 - (UIView *)scrollView:(BYPagingScrollView *)scrollView viewForPageAtIndex:(NSUInteger)pageIndex
 {
-    return nil;
+    UIView *view = [scrollView dequePageViewWithClassName:NSStringFromClass([UIView class])];
+    if (view == nil)
+    {
+        view = [[[ColorView alloc] initWithFrame:CGRectZero] autorelease];
+        view.backgroundColor = [UIColor colorWithWhite:.15 alpha:1];
+    }
+    view.tag = pageIndex;
+    return view;
 }
 
 #pragma mark -

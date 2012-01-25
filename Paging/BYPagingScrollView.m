@@ -15,6 +15,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 @synthesize pageSource = _pageSource;
 @synthesize vertical = _vertical;
 @synthesize rotating = _rotating;
+@synthesize gapBetweenPages = _gapBetweenPages;
 
 #pragma mark -
 
@@ -23,10 +24,18 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     self = [super initWithFrame:frame];
     if (self)
     {
+        self.pagingEnabled = YES;
+        self.showsHorizontalScrollIndicator = NO;
+        self.showsVerticalScrollIndicator = NO;
+        self.alwaysBounceHorizontal = (self.vertical == NO);
+        self.alwaysBounceVertical = (self.vertical == YES);
+        
         _minVisiblePage = kPageIndexNone;
         _maxVisiblePage = kPageIndexNone;
         _activePages = [[NSMutableDictionary alloc] init];
         _recycledPages = [[NSMutableDictionary alloc] init];
+        
+        _gapBetweenPages = DEFAULT_GAP_BETWEEN_PAGES;
         
         super.delegate = self;
         
@@ -63,20 +72,55 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     return nil;
 }
 
-#pragma mark - Handle visible pages
+#pragma mark - Handle active and visible pages
+
+- (void)assertPageWithIndex:(NSUInteger)pageIndex
+{
+    // Find out if a page is already pulled from the source
+    NSNumber *pageNumber = [NSNumber numberWithUnsignedInteger:pageIndex];
+    UIView *page = [_activePages objectForKey:pageNumber];
+    if (page == nil)
+    {
+        // If not, retrieve the page and add it to the active set
+        page = [self.pageSource scrollView:self viewForPageAtIndex:pageIndex];
+        if (page)
+        {
+            [_activePages setObject:page forKey:pageNumber];
+        }
+    }
+}
 
 - (void)assertActivePages
 {
-    if ((_minVisiblePage == kPageIndexNone) || (_maxVisiblePage == kPageIndexNone))
+    if ((_minVisiblePage != _maxVisiblePage) || (_minVisiblePage == kPageIndexNone) || (_maxVisiblePage == kPageIndexNone))
     {
-        return; // Do not request pages if none page is visible
+        return; // Do not call data source in the middle of scrolling and if none page is visible
     }
     
-    NSLog(@"Load from the source all active pages for current visible page indexes");
+    // Load current page
+    NSUInteger currentPage = _minVisiblePage; // _minVisiblePage == _maxVisiblePage
+    [self assertPageWithIndex:currentPage];
+    
+    // Load page at left
+    if (currentPage > 0)
+    {
+        [self assertPageWithIndex:currentPage - 1];
+    }
+    
+    // Load page at right
+    if (currentPage + 1 < _numberOfPages)
+    {
+        [self assertPageWithIndex:currentPage + 1];
+    }
 }
 
 - (void)resetContentOffsetAndSize
 {
+    if (_minVisiblePage != _maxVisiblePage)
+    {
+        return; // Do not touch content area in the middle of scrolling
+    }
+    
     if ((_minVisiblePage == kPageIndexNone) || (_maxVisiblePage == kPageIndexNone))
     {
         self.contentSize = CGSizeZero;
@@ -84,14 +128,66 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         return; // Nullify content size and offset if none page is selected
     }
     
-    NSLog(@"Reset content offset and size to display current visible page");
+    // Calculate the minimum required content size
+    CGSize frameSize = self.frame.size;
+    CGSize contentSize = (self.vertical
+                          ? CGSizeMake(frameSize.width, _activePages.count * frameSize.height)
+                          : CGSizeMake(_activePages.count * frameSize.width, frameSize.height));
+    if (!CGSizeEqualToSize(self.contentSize, contentSize))
+    {
+        self.contentSize = contentSize;
+    }
+    
+    // Move content to display current page
+    NSUInteger currentPage = _minVisiblePage; // _minVisiblePage == _maxVisiblePage
+    CGPoint contentOffset = (self.vertical
+                             ? CGPointMake(currentPage * frameSize.width, 0)
+                             : CGPointMake(0, currentPage * frameSize.height));
+    if (!CGPointEqualToPoint(self.contentOffset, contentOffset))
+    {
+        self.contentOffset = contentOffset;
+    }
 }
 
 - (void)layoutActivePages
 {
+    if (_minVisiblePage != _maxVisiblePage)
+    {
+        return; // Do not layout subviews in the middle of scrolling
+    }
+    
+    NSUInteger currentPage = _minVisiblePage; // _minVisiblePage == _maxVisiblePage
+    CGSize contentSize = self.frame.size;
+    CGPoint contentOffset = self.contentOffset;
+    
     [_activePages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         
-        NSLog(@"Add page %@ (%@) to its position related to visible page indexes %d and %d", key, obj, _minVisiblePage, _maxVisiblePage);
+        // Retrieve enumerated page index and default frame
+        NSUInteger activePage = [key unsignedIntegerValue];
+        CGRect activeFrame = { contentOffset, contentSize };
+        
+        // Shift page vertically or horizontally
+        if (self.vertical)
+        {
+            activeFrame.origin.y += ((int)activePage - (int)currentPage) * contentSize.height;
+            activeFrame = CGRectInset(activeFrame, 0, _gapBetweenPages / 2);
+        }
+        else
+        {
+            activeFrame.origin.x += ((int)activePage - (int)currentPage) * contentSize.width;
+            activeFrame = CGRectInset(activeFrame, _gapBetweenPages / 2, 0);
+        }
+        
+        if (!CGRectEqualToRect([obj frame], activeFrame))
+        {
+            [obj setFrame:activeFrame];
+        }
+        
+        // Insert page into the view hierarchy if needed
+        if ([obj superview] == nil)
+        {
+            [self addSubview:obj];
+        }
     }];
 }
 
@@ -195,7 +291,28 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         // Recycle all visible pages
         [self recycleAllActivePages];
         
-        // Update model and view
+        // Configure bounce behavior
+        self.alwaysBounceHorizontal = (self.vertical == NO);
+        self.alwaysBounceVertical = (self.vertical == YES);
+        
+        // Update view
+        [self resetActivePages];
+    }
+}
+
+- (void)setGapBetweenPages:(CGFloat)gapBetweenPages
+{
+    // Ensure that the gap is even and integral
+    gapBetweenPages = (int)(gapBetweenPages / 2) * 2;
+    
+    if ((int)_gapBetweenPages != (int)gapBetweenPages)
+    {
+        _gapBetweenPages = gapBetweenPages;
+        
+        // Recycle all visible pages
+        [self recycleAllActivePages];
+        
+        // Update view
         [self resetActivePages];
     }
 }
