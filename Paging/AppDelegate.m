@@ -20,6 +20,7 @@
 {
     UIViewController *viewController = [[[PagingViewController alloc] initWithNibName:nil bundle:nil] autorelease];
     UINavigationController *navigationController = [[[UINavigationController alloc] initWithRootViewController:viewController] autorelease];
+    navigationController.navigationBar.barStyle = UIBarStyleBlackOpaque;
     
     self.window = [[[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds] autorelease];
     self.window.rootViewController = navigationController;

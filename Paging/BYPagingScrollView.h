@@ -17,13 +17,13 @@
 
 @private
 
-    NSUInteger _numberOfPages;           // Retrieved from the page source
-    NSUInteger _minVisiblePage;          // Partially visible page from the left
-    NSUInteger _maxVisiblePage;          // Partially visible page from the right
-    NSMutableDictionary *_activePages;   // Visible and invisible subviews { NSNumber *pageIndex => UIView *pageView }
-    NSMutableDictionary *_recycledPages; // Page views for dequeuing { NSString *className => NSMutableSet *pageViews }
+    NSUInteger _numberOfPages;            // Retrieved from the page source
+    NSUInteger _minVisiblePage;           // Partially visible page 1
+    NSUInteger _maxVisiblePage;           // Partially visible page 2
+    NSMutableDictionary *_preloadedPages; // Visible and invisible subviews { NSNumber *pageIndex => UIView *pageView }
+    NSMutableDictionary *_reusablePages;  // Page views for reusing { NSString *className => NSMutableSet *pageViews }
     
-    CGFloat _gapBetweenPages;            // Black interspacing between pages
+    CGFloat _gapBetweenPages;             // Black interspacing between pages, always even i.e. 0px, 2px, 4px etc.
 }
 
 @property (nonatomic, assign) id<BYPagingScrollViewPageSource>pageSource;
@@ -32,7 +32,7 @@
 @property (nonatomic, readonly, getter = isRotating) BOOL rotating;
 @property (nonatomic) CGFloat gapBetweenPages;
 
-- (UIView *)dequePageViewWithClassName:(NSString *)className;
+- (id)dequeReusablePageViewWithClassName:(NSString *)className;
 
 - (void)beginRotation;
 - (void)endRotation;

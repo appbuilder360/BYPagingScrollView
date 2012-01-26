@@ -1,5 +1,4 @@
 #import "PagingViewController.h"
-#import "ColorView.h"
 
 @implementation PagingViewController
 
@@ -7,12 +6,12 @@
 
 - (void)loadView
 {
-    // Calculate scroll view frame as window frame minus status and navigation bars
+    // Calculate a scroll view frame as window frame minus status and navigation bars
     CGRect scrollFrame = [UIApplication sharedApplication].keyWindow.frame;
     scrollFrame.size.height -= CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
     scrollFrame.size.height -= CGRectGetHeight(self.navigationController.navigationBar.frame);
     
-    // Create scroll view
+    // Create the scroll view like a standard control
     BYPagingScrollView *pagingScrollView = [[BYPagingScrollView alloc] initWithFrame:scrollFrame];
     pagingScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
     pagingScrollView.opaque = YES;
@@ -20,7 +19,8 @@
     self.view = pagingScrollView;
     [pagingScrollView release];
     
-    // Configure scroll view in one line
+    // Configure the scroll view
+    // pagingScrollView.vertical = YES;
     pagingScrollView.pageSource = self;
 }
 
@@ -28,26 +28,31 @@
 
 - (NSUInteger)numberOfPagesInScrollView:(BYPagingScrollView *)scrollView
 {
-    return 2;
+    return 5;
 }
 
 - (UIView *)scrollView:(BYPagingScrollView *)scrollView viewForPageAtIndex:(NSUInteger)pageIndex
 {
-    UIView *view = [scrollView dequePageViewWithClassName:NSStringFromClass([UIView class])];
-    if (view == nil)
+    UILabel *label = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([UILabel class])];
+    if (label == nil)
     {
-        view = [[[ColorView alloc] initWithFrame:CGRectZero] autorelease];
-        view.backgroundColor = [UIColor colorWithWhite:.15 alpha:1];
+        label = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
+        label.backgroundColor = [UIColor colorWithWhite:.4 alpha:1];
+        label.textAlignment = UITextAlignmentCenter;
+        label.font = [UIFont boldSystemFontOfSize:150];
+        label.textColor = [UIColor colorWithWhite:.2 alpha:1];
+        label.shadowColor = [UIColor colorWithWhite:.6 alpha:1];
+        label.shadowOffset = CGSizeMake(0, 1);
     }
-    view.tag = pageIndex;
-    return view;
+    label.text = [NSString stringWithFormat:@"%d", pageIndex + 1];
+    return label;
 }
 
 #pragma mark -
 
 - (void)scrollView:(BYPagingScrollView *)scrollView didScrollToPage:(NSUInteger)newPageIndex fromPage:(NSUInteger)oldPageIndex
 {
-    self.title = [NSString stringWithFormat:@"Page %d", newPageIndex + 1];
+    self.title = [NSString stringWithFormat:@"%@", newPageIndex % 2 == 0 ? @"Even" : @"Odd"];
 }
 
 #pragma mark - How to handle rotation
