@@ -2,7 +2,7 @@
 
 @implementation PagingViewController
 
-#pragma mark - How to use paging scroll in the view controller
+#pragma mark - How to embed paging scroll view into the view hierarchy
 
 - (void)loadView
 {
@@ -20,7 +20,7 @@
     [pagingScrollView release];
     
     // Configure the scroll view
-    // pagingScrollView.vertical = YES;
+//    pagingScrollView.vertical = YES;
     pagingScrollView.pageSource = self;
 }
 
@@ -52,10 +52,10 @@
 
 - (void)scrollView:(BYPagingScrollView *)scrollView didScrollToPage:(NSUInteger)newPageIndex fromPage:(NSUInteger)oldPageIndex
 {
-    self.title = [NSString stringWithFormat:@"%@", newPageIndex % 2 == 0 ? @"Even" : @"Odd"];
+    self.title = [NSString stringWithFormat:@"%@", (newPageIndex + 1) % 2 == 0 ? @"Even" : @"Odd"];
 }
 
-#pragma mark - How to handle rotation
+#pragma mark - Help paging scroll view to handle rotation
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orientation
 {

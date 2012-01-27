@@ -18,8 +18,9 @@
 @private
 
     NSUInteger _numberOfPages;            // Retrieved from the page source
-    NSUInteger _minVisiblePage;           // Partially visible page 1
-    NSUInteger _maxVisiblePage;           // Partially visible page 2
+    NSUInteger _firstPageInLayout;        // Index of the first page laid out in the scroll view
+    NSUInteger _firstVisiblePage;         // Partially visible left (top) page
+    NSUInteger _lastVisiblePage;          // Partially visible right (bottom) page
     NSMutableDictionary *_preloadedPages; // Visible and invisible subviews { NSNumber *pageIndex => UIView *pageView }
     NSMutableDictionary *_reusablePages;  // Page views for reusing { NSString *className => NSMutableSet *pageViews }
     

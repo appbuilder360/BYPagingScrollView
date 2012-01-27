@@ -31,8 +31,8 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         self.alwaysBounceVertical = NO;
         self.scrollsToTop = NO;
         
-        _minVisiblePage = kPageIndexNone;
-        _maxVisiblePage = kPageIndexNone;
+        _firstVisiblePage = kPageIndexNone;
+        _lastVisiblePage = kPageIndexNone;
         _preloadedPages = [[NSMutableDictionary alloc] init];
         _reusablePages = [[NSMutableDictionary alloc] init];
         
@@ -59,7 +59,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     [super dealloc];
 }
 
-#pragma mark - Disable delegate
+#pragma mark - Disable native scroll view delegate
 
 - (void)setDelegate:(id<UIScrollViewDelegate>)delegate
 {
@@ -73,7 +73,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     return nil;
 }
 
-#pragma mark - Handle preloaded and visible pages
+#pragma mark - Preloading and displaying page views
 
 - (void)preloadPageWithIndex:(NSUInteger)pageIndex
 {
@@ -91,66 +91,32 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     }
 }
 
-- (void)preloadPagesIfNeeded
+- (void)preloadRequiredPages
 {
-    if ((_minVisiblePage == kPageIndexNone) || (_maxVisiblePage == kPageIndexNone))
+    if ((_firstVisiblePage == kPageIndexNone) || (_lastVisiblePage == kPageIndexNone))
     {
         return; // Do not call data source in the middle of scrolling and if none page is visible
     }
     
-    // Load current page
-    [self preloadPageWithIndex:_minVisiblePage];
-    [self preloadPageWithIndex:_maxVisiblePage];
+    // Load the visible pages
+    [self preloadPageWithIndex:_firstVisiblePage];
+    [self preloadPageWithIndex:_lastVisiblePage];
     
-    // Load page at left
-    if (_minVisiblePage > 0)
+    // Load the page before the first page
+    if (_firstVisiblePage > 0)
     {
-        [self preloadPageWithIndex:_minVisiblePage - 1];
+        [self preloadPageWithIndex:_firstVisiblePage - 1];
     }
     
-    // Load page at right
-    if (_maxVisiblePage + 1 < _numberOfPages)
+    // Load the page after the last page
+    if (_lastVisiblePage + 1 < _numberOfPages)
     {
-        [self preloadPageWithIndex:_maxVisiblePage + 1];
-    }
-}
-
-- (NSUInteger)firstPreloadedPageIndex
-{
-    return (_preloadedPages.count == 0 ? kPageIndexNone
-            : [[_preloadedPages valueForKeyPath:@"allKeys.unsignedIntegerValue.@min"] integerValue]);
-}
-
-- (void)resetContentSizeAndOffsetIfNeeded
-{
-    if ((_minVisiblePage != _maxVisiblePage) || (_minVisiblePage == kPageIndexNone) || (_maxVisiblePage == kPageIndexNone))
-    {
-        return; // skip any handling while scrolling and if none page is visible
-    }
-    
-    // Calculate and set the minimum required content size
-    CGSize frameSize = self.frame.size;
-    CGSize contentSize = (self.vertical
-                          ? CGSizeMake(frameSize.width, _preloadedPages.count * frameSize.height)
-                          : CGSizeMake(_preloadedPages.count * frameSize.width, frameSize.height));
-    if (!CGSizeEqualToSize(self.contentSize, contentSize))
-    {
-        self.contentSize = contentSize;
-    }
-    
-    // Move content to display current page
-    CGPoint contentOffset = (self.vertical
-                             ? CGPointMake(0, _minVisiblePage * frameSize.height)
-                             : CGPointMake(_minVisiblePage * frameSize.width, 0));
-    if (!CGPointEqualToPoint(self.contentOffset, contentOffset))
-    {
-        self.contentOffset = contentOffset;
+        [self preloadPageWithIndex:_lastVisiblePage + 1];
     }
 }
 
 - (void)layoutPreloadedPages
 {
-    NSUInteger firstPageIndex = self.firstPreloadedPageIndex;
     CGSize contentSize = self.frame.size;
     CGPoint contentOffset = self.contentOffset;
     
@@ -163,12 +129,12 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         // Shift page vertically or horizontally
         if (self.vertical)
         {
-            preloadedFrame.origin.y = ((int)preloadedPage - (int)firstPageIndex) * contentSize.height;
+            preloadedFrame.origin.y = ((int)preloadedPage - (int)_firstPageInLayout) * contentSize.height;
             preloadedFrame = CGRectInset(preloadedFrame, 0, _gapBetweenPages / 2);
         }
         else
         {
-            preloadedFrame.origin.x = ((int)preloadedPage - (int)firstPageIndex) * contentSize.width;
+            preloadedFrame.origin.x = ((int)preloadedPage - (int)_firstPageInLayout) * contentSize.width;
             preloadedFrame = CGRectInset(preloadedFrame, _gapBetweenPages / 2, 0);
         }
         
@@ -185,7 +151,42 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     }];
 }
 
-#pragma mark -
+#pragma mark - Adjust content area for the data model
+
+- (void)adjustContentSizeAndOffsetIfNeeded
+{
+    if ((_firstVisiblePage != _lastVisiblePage) || (_firstVisiblePage == kPageIndexNone) || (_lastVisiblePage == kPageIndexNone))
+    {
+        return; // skip any handling while scrolling and if none page is visible
+    }
+    
+    // Start loading from the page before the first visible page
+    // We update data model here, because it is guaranteed that
+    // we are not in the middle of scrolling process at the moment
+    _firstPageInLayout = MAX((int)_firstVisiblePage - 1, 0);
+    
+    // Setup content size required to embed all preloaded pages
+    CGSize frameSize = self.frame.size;
+    CGSize contentSize = (self.vertical
+                          ? CGSizeMake(frameSize.width, _preloadedPages.count * frameSize.height)
+                          : CGSizeMake(_preloadedPages.count * frameSize.width, frameSize.height));
+    if (!CGSizeEqualToSize(self.contentSize, contentSize))
+    {
+        self.contentSize = contentSize;
+    }
+    
+    // Adjust content offset to focus on the first visible page
+    CGPoint contentOffset = (self.vertical
+                             ? CGPointMake(0, frameSize.height * (_firstVisiblePage - _firstPageInLayout))
+                             : CGPointMake(frameSize.width * (_firstVisiblePage - _firstPageInLayout), 0));
+    if (!CGPointEqualToPoint(self.contentOffset, contentOffset))
+    {
+        self.contentOffset = contentOffset;
+    }
+}
+
+
+#pragma mark - Configure scroll view appearance
 
 - (void)resetContentArea
 {
@@ -199,19 +200,30 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     self.alwaysBounceHorizontal = ((_numberOfPages > 0) && !self.vertical);
 }
 
+#pragma mark - Reset preloaded and reusable caches
+
 - (void)resetPreloadedPages
 {
-    // Reset page model to the initial state
-    _minVisiblePage = _maxVisiblePage = (_numberOfPages == 0 ? kPageIndexNone : 0);
+    // Reset data model to the initial state
+    _firstVisiblePage = kPageIndexNone;
+    _lastVisiblePage = kPageIndexNone;
+    _firstPageInLayout = 0;
+    
+    // Focus on the first page if possible
+    if (_numberOfPages > 0)
+    {
+        _firstVisiblePage = 0;
+        _lastVisiblePage = 0;
+    }
     
     // Request pages from the source
-    [self preloadPagesIfNeeded];
+    [self preloadRequiredPages];
     
     // Reset scrolling content and offset to Zero
     [self resetContentArea];
     
     // Reset content area for the new orientation
-    [self resetContentSizeAndOffsetIfNeeded];
+    [self adjustContentSizeAndOffsetIfNeeded];
     
     // Enable bouncing if needed
     [self resetBouncing];
@@ -256,13 +268,13 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     }];
 }
 
-- (void)makeReusablePagesIfNeeded
+- (void)collectPagesForReusing
 {
     [_preloadedPages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         
         // Remove pages too far from visible
         NSUInteger preloadedPage = [key unsignedIntegerValue];
-        if (((int)preloadedPage < (int)_minVisiblePage - 1) || ((int)preloadedPage > (int)_maxVisiblePage + 1))
+        if (((int)preloadedPage < (int)_firstVisiblePage - 1) || ((int)preloadedPage > (int)_lastVisiblePage + 1))
         {
             // It is allowed to modify _preloadedPages here, inside the block
             [self makeReusablePageAtIndex:preloadedPage];
@@ -275,14 +287,15 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     [_reusablePages removeAllObjects];
 }
 
-#pragma mark -
-
 - (id)dequeReusablePageViewWithClassName:(NSString *)className
 {
     // Reusable pages dictionary keeps view sets under class name keys
     NSMutableSet *reusableClass = [_reusablePages objectForKey:className];
-    UIView *dequeuedPage = [[[reusableClass anyObject] retain] autorelease];
-    [reusableClass removeObject:dequeuedPage];
+    id dequeuedPage = [[[reusableClass anyObject] retain] autorelease];
+    if (dequeuedPage)
+    {
+        [reusableClass removeObject:dequeuedPage];
+    }
     return dequeuedPage;
 }
 
@@ -344,7 +357,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     [_preloadedPages enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         
         NSUInteger pageIndex = [key unsignedIntegerValue];
-        if ((pageIndex != _minVisiblePage) && (pageIndex != _maxVisiblePage))
+        if ((pageIndex != _firstVisiblePage) && (pageIndex != _lastVisiblePage))
         {
             [self makeReusablePageAtIndex:pageIndex];
         }
@@ -357,41 +370,45 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 - (void)endRotation
 {
     // Return pages removed previously back
-    [self preloadPagesIfNeeded];
+    [self preloadRequiredPages];
     
     // Reset flag used for better rotation handling
     self.rotating = NO;
 }
 
-#pragma mark - Preload pages while scrolling
+#pragma mark - Handle scrolling by changing data model
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    // Find the first preloaded page in the scroll view
-    NSInteger firstPage = self.firstPreloadedPageIndex;
-    
     // Calculate new min and max visible indexes to update model
     CGFloat frameSize = (self.vertical ? CGRectGetHeight(self.frame) : CGRectGetWidth(scrollView.frame));
     CGFloat contentOffset = (self.vertical ? self.contentOffset.y : self.contentOffset.x);
     NSInteger minPage = (NSInteger)floorf(contentOffset / frameSize);
     NSInteger maxPage = (NSInteger)floorf((contentOffset + frameSize - 1) / frameSize);
-    NSUInteger minVisiblePage = MAX(firstPage + minPage, 0);
-    NSUInteger maxVisiblePage = MIN(firstPage + maxPage, _numberOfPages);
-    
-    // Update model if needed
-    if ((_minVisiblePage != minVisiblePage) || (_maxVisiblePage != maxVisiblePage))
+    NSUInteger newMinVisiblePage = MAX((int)_firstPageInLayout + (int)minPage, 0);
+    NSUInteger newMaxVisiblePage = MIN((int)_firstPageInLayout + (int)maxPage, _numberOfPages - 1);
+
+    CGFloat pageRatio = (contentOffset - floorf(contentOffset / frameSize) * frameSize) / frameSize;
+    if (((pageRatio < 0.5) && (newMaxVisiblePage > _lastVisiblePage)) ||
+        ((pageRatio > 0.5) && (newMinVisiblePage < _firstVisiblePage)))
     {
-        _minVisiblePage = minVisiblePage;
-        _maxVisiblePage = maxVisiblePage;
+        return; // Scrolling does not worth changes when less than half of the page is scrolled
+    }
+    
+    // Update model and layout if visible pages have beed changed
+    if ((_firstVisiblePage != newMinVisiblePage) || (_lastVisiblePage != newMaxVisiblePage))
+    {
+        _firstVisiblePage = newMinVisiblePage;
+        _lastVisiblePage = newMaxVisiblePage;
         
         // Recycle too far pages
-        [self makeReusablePagesIfNeeded];
+        [self collectPagesForReusing];
         
         // Preload new pages to display soon
-        [self preloadPagesIfNeeded];
+        [self preloadRequiredPages];
         
         // Adjust content area for the new model
-        [self resetContentSizeAndOffsetIfNeeded];
+        [self adjustContentSizeAndOffsetIfNeeded];
         
         // Add new pages to the scroll view
         [self layoutPreloadedPages];
