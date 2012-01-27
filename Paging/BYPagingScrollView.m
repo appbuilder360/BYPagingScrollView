@@ -336,7 +336,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 - (void)setGapBetweenPages:(CGFloat)gapBetweenPages
 {
     // Ensure that the gap is even and integral
-    gapBetweenPages = (int)(gapBetweenPages / 2) * 2;
+    gapBetweenPages = roundf(gapBetweenPages / 2) * 2;
     
     if ((int)_gapBetweenPages != (int)gapBetweenPages)
     {

@@ -1,8 +1,8 @@
 //
 // Usual approach to implement a paging scroll view is to enclose it into a clipped view.
-// As result, you can control gaps between page views, but cannot nest cross-directional scroll views.
+// As result, you easily set the gap between page views, but cannot nest cross-directional scroll views.
 // BYPagingScrollView is more flexible because inherits from UIScrollView directly and allows nesting.
-// This way, you can combine horizontal and vertical scroll views supporting Zoom.
+// This way, you can combine horizontal and vertical scroll views and even support Zoom.
 //
 
 #define DEFAULT_GAP_BETWEEN_PAGES 20
