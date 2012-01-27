@@ -15,7 +15,7 @@
     BYPagingScrollView *pagingScrollView = [[BYPagingScrollView alloc] initWithFrame:scrollFrame];
     pagingScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
     pagingScrollView.opaque = YES;
-    pagingScrollView.backgroundColor = [UIColor blackColor];
+    pagingScrollView.backgroundColor = [UIColor redColor];
     self.view = pagingScrollView;
     [pagingScrollView release];
     
@@ -68,7 +68,7 @@
     [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
     
     // Notify scroll view that it is being rotated
-    [(BYPagingScrollView *)self.view beginRotation];
+    [(BYPagingScrollView *)self.view beginRotationWithDuration:duration];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation

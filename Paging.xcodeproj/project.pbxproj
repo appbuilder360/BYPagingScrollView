@@ -15,6 +15,7 @@
 		DD8B6F8114C6F1F80096EEC5 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DD8B6F8014C6F1F80096EEC5 /* AppDelegate.m */; };
 		DD8B6F8414C6F1F80096EEC5 /* PagingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DD8B6F8314C6F1F80096EEC5 /* PagingViewController.m */; };
 		DD8B6F9214C6F5090096EEC5 /* BYPagingScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = DD8B6F9114C6F5090096EEC5 /* BYPagingScrollView.m */; };
+		DDC98FB814D2CD8F00832C87 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDC98FB714D2CD8F00832C87 /* QuartzCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		DD8B6F8314C6F1F80096EEC5 /* PagingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PagingViewController.m; sourceTree = "<group>"; };
 		DD8B6F9014C6F5090096EEC5 /* BYPagingScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BYPagingScrollView.h; path = Paging/BYPagingScrollView.h; sourceTree = "<group>"; };
 		DD8B6F9114C6F5090096EEC5 /* BYPagingScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BYPagingScrollView.m; path = Paging/BYPagingScrollView.m; sourceTree = "<group>"; };
+		DDC98FB714D2CD8F00832C87 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DDC98FB814D2CD8F00832C87 /* QuartzCore.framework in Frameworks */,
 				DD8B6F7114C6F1F80096EEC5 /* UIKit.framework in Frameworks */,
 				DD8B6F7314C6F1F80096EEC5 /* Foundation.framework in Frameworks */,
 				DD8B6F7514C6F1F80096EEC5 /* CoreGraphics.framework in Frameworks */,
@@ -71,6 +74,7 @@
 		DD8B6F6F14C6F1F80096EEC5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DDC98FB714D2CD8F00832C87 /* QuartzCore.framework */,
 				DD8B6F7014C6F1F80096EEC5 /* UIKit.framework */,
 				DD8B6F7214C6F1F80096EEC5 /* Foundation.framework */,
 				DD8B6F7414C6F1F80096EEC5 /* CoreGraphics.framework */,

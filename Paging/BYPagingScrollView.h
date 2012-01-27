@@ -25,6 +25,8 @@
     NSMutableDictionary *_reusablePages;  // Page views for reusing { NSString *className => NSMutableSet *pageViews }
     
     CGFloat _gapBetweenPages;             // Black interspacing between pages, always even i.e. 0px, 2px, 4px etc.
+    
+    NSTimeInterval _rotationDuration;     // Cached value to animate page views
 }
 
 @property (nonatomic, assign) id<BYPagingScrollViewPageSource>pageSource;
@@ -35,7 +37,7 @@
 
 - (id)dequeReusablePageViewWithClassName:(NSString *)className;
 
-- (void)beginRotation;
+- (void)beginRotationWithDuration:(NSTimeInterval)duration;
 - (void)endRotation;
 
 @end
