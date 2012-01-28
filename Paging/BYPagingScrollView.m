@@ -86,8 +86,6 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         page = [self.pageSource scrollView:self viewForPageAtIndex:pageIndex];
         if (page)
         {
-            page.autoresizingMask = (UIViewAutoresizingFlexibleWidth |
-                                     UIViewAutoresizingFlexibleHeight);
             [_preloadedPages setObject:page forKey:pageNumber];
         }
     }
