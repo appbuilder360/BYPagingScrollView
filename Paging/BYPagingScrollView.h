@@ -34,11 +34,13 @@
 @property (nonatomic, getter = isVertical) BOOL vertical;
 @property (nonatomic, readonly, getter = isRotating) BOOL rotating;
 @property (nonatomic) CGFloat gapBetweenPages;
+@property (nonatomic, readonly) NSUInteger currentPageIndex;
 
+- (id)pageViewAtIndex:(NSUInteger)pageIndex;
 - (id)dequeReusablePageViewWithClassName:(NSString *)className;
 
-- (void)beginRotationWithDuration:(NSTimeInterval)duration;
-- (void)endRotation;
+- (void)beginTwoPartRotationWithDuration:(NSTimeInterval)duration;
+- (void)endTwoPartRotation;
 
 @end
 

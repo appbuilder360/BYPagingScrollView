@@ -30,8 +30,6 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         self.alwaysBounceHorizontal = NO;
         self.alwaysBounceVertical = NO;
         self.scrollsToTop = NO;
-        self.layer.borderColor = [UIColor whiteColor].CGColor;
-        self.layer.borderWidth = 1;
         
         _firstVisiblePage = kPageIndexNone;
         _lastVisiblePage = kPageIndexNone;
@@ -412,7 +410,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     }
 }
 
-- (void)beginRotationWithDuration:(NSTimeInterval)duration
+- (void)beginTwoPartRotationWithDuration:(NSTimeInterval)duration
 {
     // Set flag that should be used for better rotation handling
     _rotationDuration = duration;
@@ -453,7 +451,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     }
 }
 
-- (void)endRotation
+- (void)endTwoPartRotation
 {
     // Reset flag used for better rotation handling
     self.rotating = NO;
@@ -467,6 +465,24 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     
     // Layout preloaded pages after rotation
     [self layoutPreloadedPages];
+}
+
+#pragma mark - Provide external access to the current page
+
+- (NSUInteger)currentPageIndex
+{
+    NSUInteger firstPage = kPageIndexNone, lastPage = kPageIndexNone;
+    CGFloat pageRatio = 0;
+    [self getFirstVisiblePage:&firstPage lastVisiblePage:&lastPage pageRatio:&pageRatio];
+    
+    // Return index of the most visible page
+    return (pageRatio > 0.5 ? firstPage : lastPage);
+}
+
+- (id)pageViewAtIndex:(NSUInteger)pageIndex
+{
+    UIView *pageView = [_preloadedPages objectForKey:[NSNumber numberWithUnsignedInteger:pageIndex]];
+    return pageView;
 }
 
 #pragma mark - Handle scrolling by changing data model

@@ -37,6 +37,7 @@
     if (label == nil)
     {
         label = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
+        label.contentMode = UIViewContentModeCenter;
         label.backgroundColor = [UIColor colorWithWhite:.4 alpha:1];
         label.textAlignment = UITextAlignmentCenter;
         label.font = [UIFont boldSystemFontOfSize:150];
@@ -68,7 +69,7 @@
     [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
     
     // Notify scroll view that it is being rotated
-    [(BYPagingScrollView *)self.view beginRotationWithDuration:duration];
+    [(BYPagingScrollView *)self.view beginTwoPartRotationWithDuration:duration];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
@@ -76,7 +77,12 @@
     [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
     
     // Notify scroll view that rotation is completed
-    [(BYPagingScrollView *)self.view endRotation];
+    BYPagingScrollView *scrollView = (BYPagingScrollView *)self.view;
+    [scrollView endTwoPartRotation];
+    
+    // If the rotated view has a Center content mode, it may need redrawing after rotation, but not this time
+//    UILabel *label = [scrollView pageViewAtIndex:scrollView.currentPageIndex];
+//    [label setNeedsDisplay];
 }
 
 @end

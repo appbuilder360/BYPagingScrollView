@@ -56,7 +56,7 @@
 			children = (
 				DD8B6F9014C6F5090096EEC5 /* BYPagingScrollView.h */,
 				DD8B6F9114C6F5090096EEC5 /* BYPagingScrollView.m */,
-				DD8B6F7614C6F1F80096EEC5 /* Paging */,
+				DD8B6F7614C6F1F80096EEC5 /* Sources */,
 				DD8B6F7714C6F1F80096EEC5 /* Supporting Files */,
 				DD8B6F6F14C6F1F80096EEC5 /* Frameworks */,
 				DD8B6F6D14C6F1F80096EEC5 /* Products */,
@@ -82,7 +82,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		DD8B6F7614C6F1F80096EEC5 /* Paging */ = {
+		DD8B6F7614C6F1F80096EEC5 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				DD8B6F7F14C6F1F80096EEC5 /* AppDelegate.h */,
@@ -90,6 +90,7 @@
 				DD8B6F8214C6F1F80096EEC5 /* PagingViewController.h */,
 				DD8B6F8314C6F1F80096EEC5 /* PagingViewController.m */,
 			);
+			name = Sources;
 			path = Paging;
 			sourceTree = "<group>";
 		};
