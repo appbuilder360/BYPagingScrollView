@@ -27,9 +27,16 @@
 - (BYPagingScrollView *)nestedScrollViewDequeuedFromScrollView:(BYPagingScrollView *)scrollView
 {
     BYPagingScrollView *nestedScrollView = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([BYPagingScrollView class])];
-    if (nestedScrollView == nil)
-    {
-        nestedScrollView = [[[BYPagingScrollView alloc] initWithFrame:scrollView.bounds] autorelease];
+    if (nestedScrollView == nil) {
+        CGRect scrollRect = scrollView.bounds;
+        if (nestedScrollView.vertical) {
+            scrollRect.size.width -= DEFAULT_GAP_BETWEEN_PAGES;
+        }
+        else {
+            scrollRect.size.height -= DEFAULT_GAP_BETWEEN_PAGES;
+        }
+        nestedScrollView = [[[BYPagingScrollView alloc] initWithFrame:scrollRect] autorelease];
+        nestedScrollView.contentMode = UIViewContentModeCenter;
         nestedScrollView.backgroundColor = [UIColor blueColor];
         nestedScrollView.vertical = !scrollView.vertical;
         nestedScrollView.pageSource = self;
@@ -39,8 +46,7 @@
 
 - (void)configureNestedScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
 {
-    if (scrollView.tag != pageIndex + 1)
-    {
+    if (scrollView.tag != pageIndex + 1) {
         scrollView.tag = pageIndex + 1;
         [scrollView reloadPages];
     }
@@ -51,8 +57,7 @@
 - (UILabel *)labelDequeuedFromScrollView:(BYPagingScrollView *)scrollView
 {
     UILabel *label = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([UILabel class])];
-    if (label == nil)
-    {
+    if (label == nil) {
         label = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
         label.contentMode = UIViewContentModeCenter;
         label.backgroundColor = [UIColor colorWithWhite:.4 alpha:1];
@@ -68,12 +73,10 @@
 - (void)configureLabel:(UILabel *)label forScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
 {
     // Handle nested scroll view separately
-    if (scrollView == self.view)
-    {
+    if (scrollView == self.view) {
         label.text = [NSString stringWithFormat:@"%d", pageIndex + 1];
     }
-    else
-    {
+    else {
         label.text = [NSString stringWithFormat:@"%d-%d", scrollView.tag, pageIndex + 1];
     }
 }
@@ -89,13 +92,11 @@
 - (UIView *)scrollView:(BYPagingScrollView *)scrollView viewForPageAtIndex:(NSUInteger)pageIndex
 {
     id view = nil;
-    if ((scrollView == self.view) && (pageIndex % 3 == 0)) // Each third view is a nested BYPagingScrollView
-    {
+    if ((scrollView == self.view) && (pageIndex % 3 == 0)) { // Each third view is a nested BYPagingScrollView
         view = [self nestedScrollViewDequeuedFromScrollView:scrollView];
         [self configureNestedScrollView:view usingPageIndex:pageIndex];
     }
-    else
-    {
+    else {
         view = [self labelDequeuedFromScrollView:scrollView];
         [self configureLabel:view forScrollView:scrollView usingPageIndex:pageIndex];
     }
@@ -122,7 +123,14 @@
     [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
     
     // Notify scroll view that it is being rotated
-    [(BYPagingScrollView *)self.view beginTwoPartRotationWithDuration:duration];
+    BYPagingScrollView *scrollView = (BYPagingScrollView *)self.view;
+    [scrollView beginTwoPartRotationWithDuration:duration];
+    
+    // Nested scroll view should be notified too
+    id nestedScrollView = [scrollView pageViewAtIndex:scrollView.currentPageIndex];
+    if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
+        [nestedScrollView beginTwoPartRotationWithDuration:duration];
+    }
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
@@ -133,9 +141,11 @@
     BYPagingScrollView *scrollView = (BYPagingScrollView *)self.view;
     [scrollView endTwoPartRotation];
     
-    // If the rotated view has a Center content mode, it may need redrawing after rotation, but not this time
-//    UILabel *label = [scrollView pageViewAtIndex:scrollView.currentPageIndex];
-//    [label setNeedsDisplay];
+    // Nested scroll view should be notified too
+    id nestedScrollView = [scrollView pageViewAtIndex:scrollView.currentPageIndex];
+    if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
+        [nestedScrollView endTwoPartRotation];
+    }
 }
 
 @end
