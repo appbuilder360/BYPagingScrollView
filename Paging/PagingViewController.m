@@ -13,8 +13,6 @@
     
     // Create the scroll view like a standard control
     BYPagingScrollView *pagingScrollView = [[BYPagingScrollView alloc] initWithFrame:scrollFrame];
-    pagingScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-    pagingScrollView.opaque = YES;
     pagingScrollView.backgroundColor = [UIColor redColor];
     self.view = pagingScrollView;
     [pagingScrollView release];
@@ -24,14 +22,33 @@
     pagingScrollView.pageSource = self;
 }
 
-#pragma mark - Data source protocol for paging scroll view
+#pragma mark - Helper methods not related to protocol
 
-- (NSUInteger)numberOfPagesInScrollView:(BYPagingScrollView *)scrollView
+- (BYPagingScrollView *)nestedScrollViewDequeuedFromScrollView:(BYPagingScrollView *)scrollView
 {
-    return 5;
+    BYPagingScrollView *nestedScrollView = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([BYPagingScrollView class])];
+    if (nestedScrollView == nil)
+    {
+        nestedScrollView = [[[BYPagingScrollView alloc] initWithFrame:scrollView.bounds] autorelease];
+        nestedScrollView.backgroundColor = [UIColor blueColor];
+        nestedScrollView.vertical = !scrollView.vertical;
+        nestedScrollView.pageSource = self;
+    }
+    return nestedScrollView;
 }
 
-- (UIView *)scrollView:(BYPagingScrollView *)scrollView viewForPageAtIndex:(NSUInteger)pageIndex
+- (void)configureNestedScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
+{
+    if (scrollView.tag != pageIndex + 1)
+    {
+        scrollView.tag = pageIndex + 1;
+        [scrollView reloadPages];
+    }
+}
+
+#pragma mark -
+
+- (UILabel *)labelDequeuedFromScrollView:(BYPagingScrollView *)scrollView
 {
     UILabel *label = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([UILabel class])];
     if (label == nil)
@@ -40,20 +57,56 @@
         label.contentMode = UIViewContentModeCenter;
         label.backgroundColor = [UIColor colorWithWhite:.4 alpha:1];
         label.textAlignment = UITextAlignmentCenter;
-        label.font = [UIFont boldSystemFontOfSize:150];
+        label.font = [UIFont boldSystemFontOfSize:100];
         label.textColor = [UIColor colorWithWhite:.2 alpha:1];
         label.shadowColor = [UIColor colorWithWhite:.6 alpha:1];
         label.shadowOffset = CGSizeMake(0, 1);
     }
-    label.text = [NSString stringWithFormat:@"%d", pageIndex + 1];
     return label;
+}
+
+- (void)configureLabel:(UILabel *)label forScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
+{
+    // Handle nested scroll view separately
+    if (scrollView == self.view)
+    {
+        label.text = [NSString stringWithFormat:@"%d", pageIndex + 1];
+    }
+    else
+    {
+        label.text = [NSString stringWithFormat:@"%d-%d", scrollView.tag, pageIndex + 1];
+    }
+}
+
+#pragma mark - Data source protocol for paging scroll view
+
+- (NSUInteger)numberOfPagesInScrollView:(BYPagingScrollView *)scrollView
+{
+    // Each nested scroll view will have 5 pages
+    return (scrollView == self.view ? 10 : 5);
+}
+
+- (UIView *)scrollView:(BYPagingScrollView *)scrollView viewForPageAtIndex:(NSUInteger)pageIndex
+{
+    id view = nil;
+    if ((scrollView == self.view) && (pageIndex % 3 == 0)) // Each third view is a nested BYPagingScrollView
+    {
+        view = [self nestedScrollViewDequeuedFromScrollView:scrollView];
+        [self configureNestedScrollView:view usingPageIndex:pageIndex];
+    }
+    else
+    {
+        view = [self labelDequeuedFromScrollView:scrollView];
+        [self configureLabel:view forScrollView:scrollView usingPageIndex:pageIndex];
+    }
+    return view;
 }
 
 #pragma mark -
 
 - (void)scrollView:(BYPagingScrollView *)scrollView didScrollToPage:(NSUInteger)newPageIndex fromPage:(NSUInteger)oldPageIndex
 {
-    self.title = [NSString stringWithFormat:@"%@", (newPageIndex + 1) % 2 == 0 ? @"Even" : @"Odd"];
+    self.title = (scrollView == self.view ? [NSString stringWithFormat:@"%@", (newPageIndex + 1) % 2 == 0 ? @"Even" : @"Odd"] : @"Nested");
 }
 
 #pragma mark - Help paging scroll view to handle rotation

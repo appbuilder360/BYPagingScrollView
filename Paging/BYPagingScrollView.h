@@ -36,6 +36,8 @@
 @property (nonatomic) CGFloat gapBetweenPages;
 @property (nonatomic, readonly) NSUInteger currentPageIndex;
 
+- (void)reloadPages;
+
 - (id)pageViewAtIndex:(NSUInteger)pageIndex;
 - (id)dequeReusablePageViewWithClassName:(NSString *)className;
 

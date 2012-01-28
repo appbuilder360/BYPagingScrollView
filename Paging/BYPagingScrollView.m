@@ -30,6 +30,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         self.alwaysBounceHorizontal = NO;
         self.alwaysBounceVertical = NO;
         self.scrollsToTop = NO;
+        self.directionalLockEnabled = YES;
         
         _firstVisiblePage = kPageIndexNone;
         _lastVisiblePage = kPageIndexNone;
@@ -310,7 +311,24 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     return dequeuedPage;
 }
 
-#pragma mark - Properties that reload content
+#pragma mark - Public methods that reload content
+
+- (void)resetNumberOfPages
+{
+    _numberOfPages = [_pageSource numberOfPagesInScrollView:self];
+}
+
+- (void)reloadPages
+{
+    // Remove all subviews
+    [self makeReusableAllPreloadedPages];
+    
+    // Ask the data source for a number of pages
+    [self resetNumberOfPages];
+    
+    // Update model and view
+    [self resetPreloadedPages];
+}
 
 - (void)setPageSource:(id<BYPagingScrollViewPageSource>)newPageSource
 {
@@ -318,13 +336,14 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     {
         _pageSource = newPageSource;
         
+        // Remove all subviews
         [self makeReusableAllPreloadedPages];
         
         // Reset cache by removing all reusable pages
         [self clearReusablePages];
         
         // Ask the data source for a number of pages
-        _numberOfPages = [_pageSource numberOfPagesInScrollView:self];
+        [self resetNumberOfPages];
         
         // Update model and view
         [self resetPreloadedPages];
@@ -337,6 +356,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     {
         _vertical = vertical;
         
+        // Remove all subviews
         [self makeReusableAllPreloadedPages];
         
         // Update view
@@ -353,6 +373,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     {
         _gapBetweenPages = gapBetweenPages;
         
+        // Remove all subviews
         [self makeReusableAllPreloadedPages];
         
         // Update view
