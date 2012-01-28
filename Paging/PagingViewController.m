@@ -30,13 +30,12 @@
     if (nestedScrollView == nil) {
         CGRect scrollRect = scrollView.bounds;
         if (nestedScrollView.vertical) {
-            scrollRect.size.width -= DEFAULT_GAP_BETWEEN_PAGES;
-        }
-        else {
             scrollRect.size.height -= DEFAULT_GAP_BETWEEN_PAGES;
         }
+        else {
+            scrollRect.size.width -= DEFAULT_GAP_BETWEEN_PAGES;
+        }
         nestedScrollView = [[[BYPagingScrollView alloc] initWithFrame:scrollRect] autorelease];
-        nestedScrollView.contentMode = UIViewContentModeCenter;
         nestedScrollView.backgroundColor = [UIColor blueColor];
         nestedScrollView.vertical = !scrollView.vertical;
         nestedScrollView.pageSource = self;
