@@ -406,10 +406,9 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     }
 }
 
-- (void)beginTwoPartRotationWithDuration:(NSTimeInterval)duration
+- (void)beginTwoPartRotation
 {
     // Set flag that should be used for better rotation handling
-    _rotationDuration = duration;
     self.rotating = YES;
     
     // Calculate visible pages
@@ -432,6 +431,13 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     
     // Center the single visible page
     [self layoutVisiblePageDuringRotation];
+    
+    // Nested scroll view should be notified too
+    NSUInteger currentPage = self.currentPageIndex;
+    id nestedScrollView = [self pageViewAtIndex:currentPage];
+    if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
+        [nestedScrollView beginTwoPartRotation];
+    }
 }
 
 - (void)layoutSubviews
@@ -447,9 +453,15 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 - (void)endTwoPartRotation
 {
+    // Nested scroll view should be notified explicitly
+    NSUInteger currentPage = self.currentPageIndex;
+    id nestedScrollView = [self pageViewAtIndex:currentPage];
+    if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
+        [nestedScrollView endTwoPartRotation];
+    }
+        
     // Reset flag used for better rotation handling
     self.rotating = NO;
-    _rotationDuration = 0;
     
     // Request missed pages from the source
     [self preloadRequiredPages];
