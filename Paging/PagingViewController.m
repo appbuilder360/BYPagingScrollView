@@ -137,7 +137,9 @@
 
 - (void)scrollView:(BYPagingScrollView *)scrollView didScrollToPage:(NSUInteger)newPageIndex fromPage:(NSUInteger)oldPageIndex
 {
-    self.title = (scrollView == self.pagingScrollView ? [NSString stringWithFormat:@"%@", (newPageIndex + 1) % 2 == 0 ? @"Even" : @"Odd"] : @"Nested");
+    if (scrollView == self.pagingScrollView) {
+        self.title = [NSString stringWithFormat:@"%@", (newPageIndex + 1) % 2 == 0 ? @"Even" : @"Odd"];
+    }
 }
 
 #pragma mark - With paging scroll view, you have to perform rotation explicitly

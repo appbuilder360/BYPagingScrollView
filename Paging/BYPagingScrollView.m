@@ -4,6 +4,8 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 @interface BYPagingScrollView () // Private
 
+@property (nonatomic, readwrite) NSUInteger currentPageIndex;
+
 @end
 
 #pragma mark -
@@ -13,6 +15,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 @synthesize pageSource = _pageSource;
 @synthesize vertical = _vertical;
 @synthesize gapBetweenPages = _gapBetweenPages;
+@synthesize currentPageIndex = _mostVisiblePage;
 
 #pragma mark -
 
@@ -30,6 +33,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         
         _firstVisiblePage = kPageIndexNone;
         _lastVisiblePage = kPageIndexNone;
+        _mostVisiblePage = kPageIndexNone;
         _preloadedPages = [[NSMutableDictionary alloc] init];
         _reusablePages = [[NSMutableDictionary alloc] init];
         
@@ -230,6 +234,9 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     
     // Layout preloaded pages for the first time
     [self layoutPreloadedPages];
+    
+    // Notify the page source after page index reset to 0
+    self.currentPageIndex = _firstVisiblePage;
 }
 
 #pragma mark - Reuse pages
@@ -434,9 +441,11 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     // Center the single visible page
     [self layoutVisiblePageDuringRotation];
     
-    // Nested scroll view should be notified too
-    NSUInteger currentPage = self.currentPageIndex;
-    id nestedScrollView = [self pageViewAtIndex:currentPage];
+    // Notify the page source about a new focused page
+    self.currentPageIndex = newVisiblePage;
+    
+    // Nested scroll view should be also notified about rotation
+    id nestedScrollView = [self pageViewAtIndex:newVisiblePage];
     if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
         [nestedScrollView beginTwoPartRotation];
     }
@@ -456,8 +465,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 - (void)endTwoPartRotation
 {
     // Nested scroll view should be notified explicitly
-    NSUInteger currentPage = self.currentPageIndex;
-    id nestedScrollView = [self pageViewAtIndex:currentPage];
+    id nestedScrollView = [self pageViewAtIndex:_mostVisiblePage];
     if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
         [nestedScrollView endTwoPartRotation];
     }
@@ -477,20 +485,18 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 #pragma mark - Provide external access to the current page
 
-- (NSUInteger)currentPageIndex
+- (void)setCurrentPageIndex:(NSUInteger)currentPageIndex
 {
-    if (_rotating) {
-        return _firstVisiblePage;
+    if (_mostVisiblePage != currentPageIndex) {
+        
+        // Remember the last visible page to notify the page source
+        NSUInteger lastPageIndex = _mostVisiblePage;
+        
+        _mostVisiblePage = currentPageIndex;
+        
+        // Now the page source may properly request the current page index
+        [self.pageSource scrollView:self didScrollToPage:_mostVisiblePage fromPage:lastPageIndex];
     }
-    else {
-        // Return the most visible page
-        NSUInteger firstPage = kPageIndexNone, lastPage = kPageIndexNone;
-        CGFloat pageRatio = 0;
-        [self getFirstVisiblePage:&firstPage lastVisiblePage:&lastPage pageRatio:&pageRatio];
-        NSUInteger pageIndex = (pageRatio < 0.5 ? lastPage : firstPage);
-        return pageIndex;
-    }
-    
 }
 
 - (id)pageViewAtIndex:(NSUInteger)pageIndex
@@ -537,6 +543,9 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         
         // Add new pages to the scroll view
         [self layoutPreloadedPages];
+        
+        // Notify the page source about a new focused page
+        self.currentPageIndex = (visiblePageRatio < 0.5 ? _lastVisiblePage : _firstVisiblePage);
     }
 }
 
