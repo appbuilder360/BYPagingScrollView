@@ -25,12 +25,13 @@
     NSMutableDictionary *_reusablePages;  // Page views for reusing { NSString *className => NSMutableSet *pageViews }
     
     CGFloat _gapBetweenPages;             // Black interspacing between pages, always even i.e. 0px, 2px, 4px etc.
+    
+    BOOL _rotating;                       // Rotation flag is used for optimization
 }
 
 @property (nonatomic, assign) id<BYPagingScrollViewPageSource>pageSource;
 
 @property (nonatomic, getter = isVertical) BOOL vertical;
-@property (nonatomic, readonly, getter = isRotating) BOOL rotating;
 @property (nonatomic) CGFloat gapBetweenPages;
 @property (nonatomic, readonly) NSUInteger currentPageIndex;
 
