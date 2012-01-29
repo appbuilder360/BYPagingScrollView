@@ -5,4 +5,7 @@
 #import "BYPagingScrollView.h"
 
 @interface PagingViewController : UIViewController <BYPagingScrollViewPageSource>
+
+@property (nonatomic, readonly) BYPagingScrollView *pagingScrollView;
+
 @end

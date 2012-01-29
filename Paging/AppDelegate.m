@@ -19,8 +19,10 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     UIViewController *viewController = [[[PagingViewController alloc] initWithNibName:nil bundle:nil] autorelease];
+    viewController.wantsFullScreenLayout = YES;
+    
     UINavigationController *navigationController = [[[UINavigationController alloc] initWithRootViewController:viewController] autorelease];
-    navigationController.navigationBar.barStyle = UIBarStyleBlackOpaque;
+    navigationController.navigationBar.barStyle = UIBarStyleBlackTranslucent;
     
     self.window = [[[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds] autorelease];
     self.window.rootViewController = navigationController;

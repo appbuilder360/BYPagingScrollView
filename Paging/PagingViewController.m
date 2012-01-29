@@ -2,24 +2,36 @@
 
 @implementation PagingViewController
 
+@synthesize pagingScrollView = _pagingScrollView;
+
+#pragma mark -
+
+- (void)dealloc
+{
+    [_pagingScrollView release];
+    
+    [super dealloc];
+}
+
 #pragma mark - How to embed paging scroll view into the view hierarchy
 
-- (void)loadView
+- (BYPagingScrollView *)pagingScrollView
 {
-    // Calculate a scroll view frame as window frame minus status and navigation bars
-    CGRect scrollFrame = [UIApplication sharedApplication].keyWindow.frame;
-    scrollFrame.size.height -= CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
-    scrollFrame.size.height -= CGRectGetHeight(self.navigationController.navigationBar.frame);
+    if (_pagingScrollView == nil) {
+        _pagingScrollView = [[BYPagingScrollView alloc] initWithFrame:self.view.bounds];
+        _pagingScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth |
+                                              UIViewAutoresizingFlexibleHeight);
+        _pagingScrollView.backgroundColor = [UIColor redColor];
+        _pagingScrollView.pageSource = self;
+    }
+    return _pagingScrollView;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
     
-    // Create the scroll view just like a standard control
-    BYPagingScrollView *pagingScrollView = [[BYPagingScrollView alloc] initWithFrame:scrollFrame];
-    pagingScrollView.backgroundColor = [UIColor redColor];
-    self.view = pagingScrollView;
-    [pagingScrollView release];
-    
-    // Configure the scroll view
-//    pagingScrollView.vertical = YES;
-    pagingScrollView.pageSource = self;
+    [self.view addSubview:self.pagingScrollView];
 }
 
 #pragma mark - Helper methods not related to the paging source protocol
@@ -48,7 +60,7 @@
 - (void)configureNestedScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
 {
     // Check new frame after possible device rotation while the scroll view was in the reuse cache
-    CGRect scrollRect = self.view.frame;
+    CGRect scrollRect = self.pagingScrollView.frame;
     if (scrollView.vertical) {
         scrollRect.size.width -= DEFAULT_GAP_BETWEEN_PAGES;
     }
@@ -90,7 +102,7 @@
 - (void)configureLabel:(UILabel *)label forScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
 {
     // Handle nested scroll view separately
-    if (scrollView == self.view) {
+    if (scrollView == self.pagingScrollView) {
         label.text = [NSString stringWithFormat:@"%d", pageIndex + 1];
     }
     else {
@@ -102,13 +114,13 @@
 
 - (NSUInteger)numberOfPagesInScrollView:(BYPagingScrollView *)scrollView
 {
-    return (scrollView == self.view ? 10 : 5); // Nested scroll views will contain 5 pages
+    return (scrollView == self.pagingScrollView ? 10 : 5); // Nested scroll views will contain 5 pages
 }
 
 - (UIView *)scrollView:(BYPagingScrollView *)scrollView viewForPageAtIndex:(NSUInteger)pageIndex
 {
     // Each 3rd page is another nested paging scroll view 
-    if ((scrollView == self.view) && (pageIndex % 3 == 0)) {
+    if ((scrollView == self.pagingScrollView) && (pageIndex % 3 == 0)) {
         
         BYPagingScrollView *nestedScrollView = [self nestedScrollViewDequeuedFromScrollView:scrollView];
         [self configureNestedScrollView:nestedScrollView usingPageIndex:pageIndex];
@@ -125,7 +137,7 @@
 
 - (void)scrollView:(BYPagingScrollView *)scrollView didScrollToPage:(NSUInteger)newPageIndex fromPage:(NSUInteger)oldPageIndex
 {
-    self.title = (scrollView == self.view ? [NSString stringWithFormat:@"%@", (newPageIndex + 1) % 2 == 0 ? @"Even" : @"Odd"] : @"Nested");
+    self.title = (scrollView == self.pagingScrollView ? [NSString stringWithFormat:@"%@", (newPageIndex + 1) % 2 == 0 ? @"Even" : @"Odd"] : @"Nested");
 }
 
 #pragma mark - With paging scroll view, you have to perform rotation explicitly
@@ -137,12 +149,12 @@
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    [(BYPagingScrollView *)self.view beginTwoPartRotation]; // Explicitly notify scroll view that it is being rotated
+    [self.pagingScrollView beginTwoPartRotation]; // Explicitly notify scroll view that it is being rotated
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    [(BYPagingScrollView *)self.view endTwoPartRotation]; // Explicitly notify scroll view that rotation is completed
+    [self.pagingScrollView endTwoPartRotation]; // Explicitly notify scroll view that rotation is completed
 }
 
 @end
