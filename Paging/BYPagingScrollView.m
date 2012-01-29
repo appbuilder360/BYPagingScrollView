@@ -399,8 +399,8 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     
     // Center the single visible page in the scroll view
     CGRect pageFrame = (self.vertical
-                        ? CGRectInset(self.frame, 0, _gapBetweenPages / 2)
-                        : CGRectInset(self.frame, _gapBetweenPages / 2, 0));
+                        ? CGRectInset(self.bounds, 0, _gapBetweenPages / 2)
+                        : CGRectInset(self.bounds, _gapBetweenPages / 2, 0));
     if (!CGRectEqualToRect(visiblePage.frame, pageFrame)) {
         visiblePage.frame = pageFrame;
     }
@@ -465,12 +465,18 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 - (NSUInteger)currentPageIndex
 {
-    NSUInteger firstPage = kPageIndexNone, lastPage = kPageIndexNone;
-    CGFloat pageRatio = 0;
-    [self getFirstVisiblePage:&firstPage lastVisiblePage:&lastPage pageRatio:&pageRatio];
+    if (self.rotating) {
+        return _firstVisiblePage;
+    }
+    else {
+        // Return the most visible page
+        NSUInteger firstPage = kPageIndexNone, lastPage = kPageIndexNone;
+        CGFloat pageRatio = 0;
+        [self getFirstVisiblePage:&firstPage lastVisiblePage:&lastPage pageRatio:&pageRatio];
+        NSUInteger pageIndex = (pageRatio < 0.5 ? lastPage : firstPage);
+        return pageIndex;
+    }
     
-    // Return index of the most visible page
-    return (pageRatio > 0.5 ? firstPage : lastPage);
 }
 
 - (id)pageViewAtIndex:(NSUInteger)pageIndex

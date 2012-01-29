@@ -29,7 +29,7 @@
     BYPagingScrollView *nestedScrollView = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([BYPagingScrollView class])];
     if (nestedScrollView == nil) {
         CGRect scrollRect = scrollView.bounds;
-        if (nestedScrollView.vertical) {
+        if (scrollView.vertical) {
             scrollRect.size.height -= DEFAULT_GAP_BETWEEN_PAGES;
         }
         else {
@@ -65,9 +65,35 @@
         label.textColor = [UIColor colorWithWhite:.2 alpha:1];
         label.shadowColor = [UIColor colorWithWhite:.6 alpha:1];
         label.shadowOffset = CGSizeMake(0, 1);
+        label.text = @"?????";
+        [label sizeToFit];
     }
     return label;
 }
+
+- (UIView *)labelViewDequeuedFromScrollView:(BYPagingScrollView *)scrollView
+{
+    UIView *labelView = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([UIView class])];
+    if (labelView == nil) {
+        CGRect viewRect = scrollView.bounds;
+        if (scrollView.vertical) {
+            viewRect.size.height -= DEFAULT_GAP_BETWEEN_PAGES;
+        }
+        else {
+            viewRect.size.width -= DEFAULT_GAP_BETWEEN_PAGES;
+        }
+        labelView = [[[UIView alloc] initWithFrame:viewRect] autorelease];
+        labelView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
+        labelView.backgroundColor = [UIColor darkGrayColor];
+        labelView.layer.borderColor = [UIColor whiteColor].CGColor;
+        labelView.layer.borderWidth = 2;
+        
+        [labelView addSubview:[self labelDequeuedFromScrollView:scrollView]];
+    }
+    return labelView;
+}
+
+#pragma mark -
 
 - (void)configureLabel:(UILabel *)label forScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
 {
@@ -78,6 +104,12 @@
     else {
         label.text = [NSString stringWithFormat:@"%d-%d", scrollView.tag, pageIndex + 1];
     }
+}
+
+- (void)configureLabelView:(UIView *)labelView forScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
+{
+    UILabel *label = labelView.subviews.lastObject;
+    [self configureLabel:label forScrollView:scrollView usingPageIndex:pageIndex];
 }
 
 #pragma mark - Data source protocol for paging scroll view
@@ -126,7 +158,8 @@
     [scrollView beginTwoPartRotationWithDuration:duration];
     
     // Nested scroll view should be notified too
-    id nestedScrollView = [scrollView pageViewAtIndex:scrollView.currentPageIndex];
+    NSUInteger currentPage = scrollView.currentPageIndex;
+    id nestedScrollView = [scrollView pageViewAtIndex:currentPage];
     if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
         [nestedScrollView beginTwoPartRotationWithDuration:duration];
     }
@@ -141,7 +174,8 @@
     [scrollView endTwoPartRotation];
     
     // Nested scroll view should be notified too
-    id nestedScrollView = [scrollView pageViewAtIndex:scrollView.currentPageIndex];
+    NSUInteger currentPage = scrollView.currentPageIndex;
+    id nestedScrollView = [scrollView pageViewAtIndex:currentPage];
     if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
         [nestedScrollView endTwoPartRotation];
     }
