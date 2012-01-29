@@ -45,7 +45,23 @@
 
 - (void)configureNestedScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
 {
-    if (scrollView.tag != pageIndex + 1) {
+    // Calculate new frame after device rotation while the scroll view was in the reuse cache
+    CGRect scrollRect = self.view.frame;
+    if (scrollView.vertical) {
+        scrollRect.size.width -= DEFAULT_GAP_BETWEEN_PAGES;
+    }
+    else {
+        scrollRect.size.height -= DEFAULT_GAP_BETWEEN_PAGES;
+    }
+    
+    // Pages will be reloaded to apply a new layout if the device was rotated
+    BOOL sizeChanged = !CGSizeEqualToSize(scrollRect.size, scrollView.frame.size);
+    if (sizeChanged) {
+        scrollView.frame = scrollRect;
+    }
+    
+    // Reload pages if the scroll view data or frame was changed
+    if (sizeChanged || (scrollView.tag != pageIndex + 1)) {
         scrollView.tag = pageIndex + 1;
         [scrollView reloadPages];
     }
