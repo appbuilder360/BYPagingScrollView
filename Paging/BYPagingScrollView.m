@@ -35,7 +35,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         
         _gapBetweenPages = DEFAULT_GAP_BETWEEN_PAGES;
         
-        super.delegate = self;
+        self.delegate = self;
         
         // Reusable pages may be quite heavy, so it's better to perform cleanup on memory request
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(clearReusablePages)
@@ -60,16 +60,18 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 - (void)setDelegate:(id<UIScrollViewDelegate>)delegate
 {
-    // Take a look at [super setDelegate:self] in -[initWithFrame:]
-    NSLog(@"Paging scroll view does not support delegate, you should use a property pageDelegate");
-    
-    [super setDelegate:delegate];
+    if ((delegate == nil) || [delegate isKindOfClass:[BYPagingScrollView class]]) {
+        [super setDelegate:delegate];
+    }
+    else {
+        // Take a look at self.delegate = self in -[initWithFrame:]
+        NSLog(@"Paging scroll view does not support delegate, you should use a property pageDelegate");
+    }
 }
 
 - (id<UIScrollViewDelegate>)delegate
 {
     NSLog(@"You should not access paging scroll view delegate, use a replacement property pageDelegate");
-    
     return [super delegate];
 }
 
