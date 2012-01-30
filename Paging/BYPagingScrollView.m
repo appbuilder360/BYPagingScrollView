@@ -415,6 +415,12 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     }
 }
 
+- (id)pageViewAtIndex:(NSUInteger)pageIndex
+{
+    UIView *pageView = [_preloadedPages objectForKey:[NSNumber numberWithUnsignedInteger:pageIndex]];
+    return pageView;
+}
+
 - (void)beginTwoPartRotation
 {
     // Set flag that should be used for better rotation handling
@@ -487,7 +493,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key
 {
-    return ![key isEqualToString:@"currentPageIndex"];
+    return !([key isEqualToString:@"currentPageIndex"] || [key isEqualToString:@"currentPageView"]);
 }
 
 - (void)setCurrentPageIndex:(NSUInteger)currentPageIndex
@@ -500,18 +506,19 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         // Perform a KVO-compliant update
         if (lastPageIndex != kPageIndexNone) {
             [self willChangeValueForKey:@"currentPageIndex"];
+            [self willChangeValueForKey:@"currentPageView"];
         }
         _mostVisiblePage = currentPageIndex;
         if (lastPageIndex != kPageIndexNone) {
             [self didChangeValueForKey:@"currentPageIndex"];
+            [self didChangeValueForKey:@"currentPageView"];
         }
     }
 }
 
-- (id)pageViewAtIndex:(NSUInteger)pageIndex
+- (id)currentPageView
 {
-    UIView *pageView = [_preloadedPages objectForKey:[NSNumber numberWithUnsignedInteger:pageIndex]];
-    return pageView;
+    return [self pageViewAtIndex:self.currentPageIndex];
 }
 
 #pragma mark - Handle scrolling by changing data model
