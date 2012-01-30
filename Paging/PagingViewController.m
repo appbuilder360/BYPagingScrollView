@@ -8,12 +8,15 @@
 
 - (void)dealloc
 {
+    [_pagingScrollView removeObserver:self forKeyPath:@"currentPageIndex"];
     [_pagingScrollView release];
     
     [super dealloc];
 }
 
 #pragma mark - How to embed paging scroll view into the view hierarchy
+
+void *kContextCurrentPageIndex = &kContextCurrentPageIndex;
 
 - (BYPagingScrollView *)pagingScrollView
 {
@@ -23,8 +26,23 @@
                                               UIViewAutoresizingFlexibleHeight);
         _pagingScrollView.backgroundColor = [UIColor redColor];
         _pagingScrollView.pageSource = self;
+        
+        // Watch for scrolling changes to update a title in the navigation bar
+        [_pagingScrollView addObserver:self forKeyPath:@"currentPageIndex"
+                               options:(NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew)
+                               context:kContextCurrentPageIndex];
     }
     return _pagingScrollView;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if (context == kContextCurrentPageIndex) {
+        self.title = ([[change valueForKey:NSKeyValueChangeNewKey] intValue] % 2 ? @"Odd" :@"Even");
+    }
+    else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
 }
 
 - (void)viewDidLoad
@@ -130,15 +148,6 @@
         UILabel *label = [self labelDequeuedFromScrollView:scrollView];
         [self configureLabel:label forScrollView:scrollView usingPageIndex:pageIndex];
         return label;
-    }
-}
-
-#pragma mark -
-
-- (void)scrollView:(BYPagingScrollView *)scrollView didScrollToPage:(NSUInteger)newPageIndex fromPage:(NSUInteger)oldPageIndex
-{
-    if (scrollView == self.pagingScrollView) {
-        self.title = [NSString stringWithFormat:@"%@", (newPageIndex + 1) % 2 == 0 ? @"Even" : @"Odd"];
     }
 }
 

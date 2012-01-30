@@ -34,7 +34,7 @@
 
 @property (nonatomic, getter = isVertical) BOOL vertical;
 @property (nonatomic) CGFloat gapBetweenPages;
-@property (nonatomic, readonly) NSUInteger currentPageIndex;
+@property (nonatomic, readonly) NSUInteger currentPageIndex; // KVO-compliant
 
 - (void)reloadPages;
 
@@ -54,9 +54,5 @@
 
 - (NSUInteger)numberOfPagesInScrollView:(BYPagingScrollView *)scrollView;
 - (UIView *)scrollView:(BYPagingScrollView *)scrollView viewForPageAtIndex:(NSUInteger)pageIndex;
-
-@optional
-
-- (void)scrollView:(BYPagingScrollView *)scrollView didScrollToPage:(NSUInteger)newPageIndex fromPage:(NSUInteger)oldPageIndex;
 
 @end

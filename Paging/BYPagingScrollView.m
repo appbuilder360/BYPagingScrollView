@@ -485,6 +485,11 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 #pragma mark - Provide external access to the current page
 
++ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key
+{
+    return ![key isEqualToString:@"currentPageIndex"];
+}
+
 - (void)setCurrentPageIndex:(NSUInteger)currentPageIndex
 {
     if (_mostVisiblePage != currentPageIndex) {
@@ -492,10 +497,14 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         // Remember the last visible page to notify the page source
         NSUInteger lastPageIndex = _mostVisiblePage;
         
+        // Perform a KVO-compliant update
+        if (lastPageIndex != kPageIndexNone) {
+            [self willChangeValueForKey:@"currentPageIndex"];
+        }
         _mostVisiblePage = currentPageIndex;
-        
-        // Now the page source may properly request the current page index
-        [self.pageSource scrollView:self didScrollToPage:_mostVisiblePage fromPage:lastPageIndex];
+        if (lastPageIndex != kPageIndexNone) {
+            [self didChangeValueForKey:@"currentPageIndex"];
+        }
     }
 }
 
