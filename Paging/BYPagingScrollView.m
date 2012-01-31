@@ -64,7 +64,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 - (void)setDelegate:(id<UIScrollViewDelegate>)delegate
 {
-    if ((delegate == nil) || [delegate isKindOfClass:[BYPagingScrollView class]]) {
+    if ((delegate == nil) || (delegate == self)) {
         [super setDelegate:delegate];
     }
     else {
@@ -99,10 +99,10 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 - (void)preloadRequiredPages
 {
     if ((_firstVisiblePage == kPageIndexNone) || (_lastVisiblePage == kPageIndexNone)) {
-        return; // Do not call data source in the middle of scrolling and if none page is visible
+        return; // Do not call data source in the middle of scrolling or if some page is visible
     }
     
-    // Load the visible pages
+    // Load visible pages
     [self preloadPageWithIndex:_firstVisiblePage];
     [self preloadPageWithIndex:_lastVisiblePage];
     
@@ -120,36 +120,35 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 - (void)enumeratePreloadedPagesUsingBlock:(void (^)(NSUInteger pageIndex, UIView *pageView))block
 {
     if (block) {
-        NSDictionary *copy = [_preloadedPages copy];
-        for (id key in copy) {
-            block([key unsignedIntegerValue], [copy objectForKey:key]);
+        NSArray *keys = [[_preloadedPages allKeys] copy];
+        for (id key in keys) {
+            block([key unsignedIntegerValue], [_preloadedPages objectForKey:key]);
         }
-        [copy release];
+        [keys release];
     }
 }
 
 - (void)layoutPreloadedPages
 {
-    CGSize contentSize = self.frame.size;
+    CGSize pageSize = self.frame.size;
     CGPoint contentOffset = self.contentOffset;
     
     [self enumeratePreloadedPagesUsingBlock:^(NSUInteger pageIndex, UIView *pageView) {
         
-        // Retrieve enumerated page index and default frame
-        CGRect preloadedFrame = { contentOffset, contentSize };
+        CGRect pageRect = { contentOffset, pageSize };
         
         // Shift page vertically or horizontally
         if (_vertical) {
-            preloadedFrame.origin.y = ((int)pageIndex - (int)_firstPageInLayout) * contentSize.height;
-            preloadedFrame = CGRectInset(preloadedFrame, 0, _gapBetweenPages / 2);
+            pageRect.origin.y = ((int)pageIndex - (int)_firstPageInLayout) * pageSize.height;
+            pageRect = CGRectInset(pageRect, 0, _gapBetweenPages / 2);
         }
         else {
-            preloadedFrame.origin.x = ((int)pageIndex - (int)_firstPageInLayout) * contentSize.width;
-            preloadedFrame = CGRectInset(preloadedFrame, _gapBetweenPages / 2, 0);
+            pageRect.origin.x = ((int)pageIndex - (int)_firstPageInLayout) * pageSize.width;
+            pageRect = CGRectInset(pageRect, _gapBetweenPages / 2, 0);
         }
         
-        if (!CGRectEqualToRect([pageView frame], preloadedFrame)) {
-            pageView.frame = preloadedFrame;
+        if (!CGRectEqualToRect([pageView frame], pageRect)) {
+            pageView.frame = pageRect;
         }
         
         // Insert page into the view hierarchy if needed

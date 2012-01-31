@@ -27,7 +27,7 @@
 }
 
 @property (nonatomic, getter = isVertical) BOOL vertical;                 // Changes scrolling direction from left-right to up-down
-@property (nonatomic) CGFloat gapBetweenPages;                            // Sets interspacing between neighbor page views
+@property (nonatomic) CGFloat gapBetweenPages;                            // Interspacing between neighbor page views
 @property (nonatomic, readonly) NSUInteger currentPageIndex;              // KVO-compliant property enabling UI updates
 @property (nonatomic, readonly) id currentPageView;                       // KVO-compliant property to access the most visible page
 
