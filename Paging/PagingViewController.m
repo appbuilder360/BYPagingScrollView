@@ -1,5 +1,7 @@
 #import "PagingViewController.h"
 
+#define USE_VERTICAL_SCROLLING_DIRECTION NO // Change to YES to change scrolling direction
+
 @implementation PagingViewController
 
 @synthesize pagingScrollView = _pagingScrollView;
@@ -21,10 +23,14 @@ void *kContextCurrentPageIndex = &kContextCurrentPageIndex;
 - (BYPagingScrollView *)pagingScrollView
 {
     if (_pagingScrollView == nil) {
-        _pagingScrollView = [[BYPagingScrollView alloc] initWithFrame:self.view.bounds];
-        _pagingScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth |
-                                              UIViewAutoresizingFlexibleHeight);
-        _pagingScrollView.backgroundColor = [UIColor redColor];
+        
+        CGRect scrollRect = (USE_VERTICAL_SCROLLING_DIRECTION
+                             ? CGRectInset(self.view.bounds, 0, - DEFAULT_GAP_BETWEEN_PAGES / 2)
+                             : CGRectInset(self.view.bounds, - DEFAULT_GAP_BETWEEN_PAGES / 2, 0));
+        
+        _pagingScrollView = [[BYPagingScrollView alloc] initWithFrame:scrollRect];
+        _pagingScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
+        _pagingScrollView.vertical = USE_VERTICAL_SCROLLING_DIRECTION;
         _pagingScrollView.pageSource = self;
         
         // Watch for scrolling changes to update a title in the navigation bar
@@ -37,12 +43,10 @@ void *kContextCurrentPageIndex = &kContextCurrentPageIndex;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    if (context == kContextCurrentPageIndex) {
+    if (context == kContextCurrentPageIndex)
         self.title = ([[change valueForKey:NSKeyValueChangeNewKey] intValue] % 2 ? @"Odd" :@"Even");
-    }
-    else {
+    else
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-    }
 }
 
 - (void)viewDidLoad
@@ -58,17 +62,7 @@ void *kContextCurrentPageIndex = &kContextCurrentPageIndex;
 {
     BYPagingScrollView *nestedScrollView = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([BYPagingScrollView class])];
     if (nestedScrollView == nil) {
-        
-        CGRect scrollRect = scrollView.bounds;
-        if (scrollView.vertical) {
-            scrollRect.size.height -= DEFAULT_GAP_BETWEEN_PAGES;
-        }
-        else {
-            scrollRect.size.width -= DEFAULT_GAP_BETWEEN_PAGES;
-        }
-        
-        nestedScrollView = [[[BYPagingScrollView alloc] initWithFrame:scrollRect] autorelease];
-        nestedScrollView.backgroundColor = [UIColor blueColor];
+        nestedScrollView = [[[BYPagingScrollView alloc] initWithFrame:scrollView.bounds] autorelease];
         nestedScrollView.vertical = !scrollView.vertical;
         nestedScrollView.pageSource = self;
     }
@@ -77,23 +71,8 @@ void *kContextCurrentPageIndex = &kContextCurrentPageIndex;
 
 - (void)configureNestedScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
 {
-    // Check new frame after possible device rotation while the scroll view was in the reuse cache
-    CGRect scrollRect = self.pagingScrollView.frame;
-    if (scrollView.vertical) {
-        scrollRect.size.width -= DEFAULT_GAP_BETWEEN_PAGES;
-    }
-    else {
-        scrollRect.size.height -= DEFAULT_GAP_BETWEEN_PAGES;
-    }
-    
-    // Pages will be reloaded to apply a new layout if the device was rotated
-    BOOL sizeChanged = !CGSizeEqualToSize(scrollRect.size, scrollView.frame.size);
-    if (sizeChanged) {
-        scrollView.frame = scrollRect;
-    }
-    
-    // Reload pages if the scroll view data or frame was changed
-    if (sizeChanged || (scrollView.tag != pageIndex + 1)) {
+    // Tag is used as a prefix in page labels
+    if (scrollView.tag != pageIndex + 1) {
         scrollView.tag = pageIndex + 1;
         [scrollView reloadPages];
     }
@@ -107,25 +86,20 @@ void *kContextCurrentPageIndex = &kContextCurrentPageIndex;
     if (label == nil) {
         label = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
         label.contentMode = UIViewContentModeCenter;
-        label.backgroundColor = [UIColor colorWithWhite:.4 alpha:1];
         label.textAlignment = UITextAlignmentCenter;
         label.font = [UIFont boldSystemFontOfSize:100];
-        label.textColor = [UIColor colorWithWhite:.2 alpha:1];
-        label.shadowColor = [UIColor colorWithWhite:.6 alpha:1];
-        label.shadowOffset = CGSizeMake(0, 1);
+        label.textColor = [UIColor colorWithWhite:.45 alpha:1];
+        label.backgroundColor = [UIColor colorWithWhite:.75 alpha:1];
     }
     return label;
 }
 
 - (void)configureLabel:(UILabel *)label forScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
 {
-    // Handle nested scroll view separately
-    if (scrollView == self.pagingScrollView) {
+    if (scrollView == self.pagingScrollView)
         label.text = [NSString stringWithFormat:@"%d", pageIndex + 1];
-    }
-    else {
+    else // Nested scroll view
         label.text = [NSString stringWithFormat:@"%d-%d", scrollView.tag, pageIndex + 1];
-    }
 }
 
 #pragma mark - Data source protocol for paging scroll view

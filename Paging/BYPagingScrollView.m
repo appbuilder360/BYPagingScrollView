@@ -64,19 +64,45 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 - (void)setDelegate:(id<UIScrollViewDelegate>)delegate
 {
-    if ((delegate == nil) || (delegate == self)) {
+    if ((delegate == nil) || (delegate == self))
         [super setDelegate:delegate];
-    }
-    else {
+    else
         // Take a look at self.delegate = self in -[initWithFrame:]
         NSLog(@"Paging scroll view does not support delegate, you should use a property pageDelegate");
-    }
 }
 
 - (id<UIScrollViewDelegate>)delegate
 {
     NSLog(@"You should not access paging scroll view delegate, use a replacement property pageDelegate");
     return [super delegate];
+}
+
+#pragma mark - Adjust content area for the data model
+
+- (void)adjustContentSizeAndOffsetIfNeeded
+{
+    if ((_firstVisiblePage != _lastVisiblePage) || (_firstVisiblePage == kPageIndexNone) || (_lastVisiblePage == kPageIndexNone))
+        return; // skip any handling while scrolling and if none page is visible
+    
+    // Start loading from the page before the first visible page
+    // We update data model here, because it is guaranteed that
+    // we are not in the middle of scrolling process at the moment
+    _firstPageInLayout = MAX((int)_firstVisiblePage - 1, 0);
+    
+    // Setup content size required to embed all preloaded pages
+    CGSize pageSize = self.bounds.size;
+    CGSize contentSize = (_vertical
+                          ? CGSizeMake(pageSize.width, _preloadedPages.count * pageSize.height)
+                          : CGSizeMake(_preloadedPages.count * pageSize.width, pageSize.height));
+    if (!CGSizeEqualToSize(self.contentSize, contentSize))
+        self.contentSize = contentSize;
+    
+    // Adjust content offset to focus on the first visible page
+    CGPoint contentOffset = (_vertical
+                             ? CGPointMake(0, pageSize.height * (_firstVisiblePage - _firstPageInLayout))
+                             : CGPointMake(pageSize.width * (_firstVisiblePage - _firstPageInLayout), 0));
+    if (!CGPointEqualToPoint(self.contentOffset, contentOffset))
+        self.contentOffset = contentOffset;
 }
 
 #pragma mark - Preloading and displaying page views
@@ -90,40 +116,35 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         
         // If not, retrieve the page and add it to the preloaded set
         page = [self.pageSource scrollView:self viewForPageAtIndex:pageIndex];
-        if (page) {
+        if (page)
             [_preloadedPages setObject:page forKey:pageNumber];
-        }
     }
 }
 
 - (void)preloadRequiredPages
 {
-    if ((_firstVisiblePage == kPageIndexNone) || (_lastVisiblePage == kPageIndexNone)) {
+    if ((_firstVisiblePage == kPageIndexNone) || (_lastVisiblePage == kPageIndexNone))
         return; // Do not call data source in the middle of scrolling or if some page is visible
-    }
     
     // Load visible pages
     [self preloadPageWithIndex:_firstVisiblePage];
     [self preloadPageWithIndex:_lastVisiblePage];
     
     // Load the page before the first page
-    if (_firstVisiblePage > 0) {
+    if (_firstVisiblePage > 0)
         [self preloadPageWithIndex:_firstVisiblePage - 1];
-    }
     
     // Load the page after the last page
-    if (_lastVisiblePage + 1 < _numberOfPages) {
+    if (_lastVisiblePage + 1 < _numberOfPages)
         [self preloadPageWithIndex:_lastVisiblePage + 1];
-    }
 }
 
 - (void)enumeratePreloadedPagesUsingBlock:(void (^)(NSUInteger pageIndex, UIView *pageView))block
 {
     if (block) {
         NSArray *keys = [[_preloadedPages allKeys] copy];
-        for (id key in keys) {
+        for (id key in keys)
             block([key unsignedIntegerValue], [_preloadedPages objectForKey:key]);
-        }
         [keys release];
     }
 }
@@ -147,48 +168,30 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
             pageRect = CGRectInset(pageRect, _gapBetweenPages / 2, 0);
         }
         
-        if (!CGRectEqualToRect([pageView frame], pageRect)) {
+        // Expand nested BYPagingScrollView to hide the gap between its pages
+        if ([pageView isKindOfClass:[BYPagingScrollView class]]) {
+            BYPagingScrollView *nestedScrollView = (BYPagingScrollView *)pageView;
+            CGFloat inset = - nestedScrollView.gapBetweenPages / 2;
+            pageRect = (nestedScrollView.vertical
+                        ? CGRectInset(pageRect, 0, inset)
+                        : CGRectInset(pageRect, inset, 0));
+        }
+        
+        if (!CGRectEqualToRect(pageView.frame, pageRect))
             pageView.frame = pageRect;
+        
+        // Force layout in the nested scroll view
+        if ([pageView isKindOfClass:[BYPagingScrollView class]]) {
+            BYPagingScrollView *nestedScrollView = (BYPagingScrollView *)pageView;
+            [nestedScrollView adjustContentSizeAndOffsetIfNeeded];
+            [nestedScrollView layoutPreloadedPages];
         }
         
         // Insert page into the view hierarchy if needed
-        if (pageView.superview == nil) {
+        if (pageView.superview == nil)
             [self addSubview:pageView];
-        }
     }];
 }
-
-#pragma mark - Adjust content area for the data model
-
-- (void)adjustContentSizeAndOffsetIfNeeded
-{
-    if ((_firstVisiblePage != _lastVisiblePage) || (_firstVisiblePage == kPageIndexNone) || (_lastVisiblePage == kPageIndexNone)) {
-        return; // skip any handling while scrolling and if none page is visible
-    }
-    
-    // Start loading from the page before the first visible page
-    // We update data model here, because it is guaranteed that
-    // we are not in the middle of scrolling process at the moment
-    _firstPageInLayout = MAX((int)_firstVisiblePage - 1, 0);
-    
-    // Setup content size required to embed all preloaded pages
-    CGSize pageSize = self.bounds.size;
-    CGSize contentSize = (_vertical
-                          ? CGSizeMake(pageSize.width, _preloadedPages.count * pageSize.height)
-                          : CGSizeMake(_preloadedPages.count * pageSize.width, pageSize.height));
-    if (!CGSizeEqualToSize(self.contentSize, contentSize)) {
-        self.contentSize = contentSize;
-    }
-    
-    // Adjust content offset to focus on the first visible page
-    CGPoint contentOffset = (_vertical
-                             ? CGPointMake(0, pageSize.height * (_firstVisiblePage - _firstPageInLayout))
-                             : CGPointMake(pageSize.width * (_firstVisiblePage - _firstPageInLayout), 0));
-    if (!CGPointEqualToPoint(self.contentOffset, contentOffset)) {
-        self.contentOffset = contentOffset;
-    }
-}
-
 
 #pragma mark - Configure scroll view appearance
 
@@ -278,11 +281,8 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     [self enumeratePreloadedPagesUsingBlock:^(NSUInteger pageIndex, UIView *pageView) {
         
         // Remove pages too far from visible
-        if ((pageIndex + 1 < _firstVisiblePage) || (_lastVisiblePage < pageIndex - 1)) {
-            
-            // It is allowed to modify _preloadedPages here, inside the block
+        if ((pageIndex + 1 < _firstVisiblePage) || (_lastVisiblePage < pageIndex - 1))
             [self makeReusablePageAtIndex:pageIndex];
-        }
     }];
 }
 
@@ -371,31 +371,6 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 #pragma mark - Handling rotation
 
-- (void)getFirstVisiblePage:(NSUInteger *)firstPtr lastVisiblePage:(NSUInteger *)lastPtr pageRatio:(CGFloat *)ratioPtr;
-{
-    // Instruments -> self.bounds is faster than self.frame
-    CGFloat pageSize = (_vertical ? self.bounds.size.height : self.bounds.size.width);
-    CGFloat contentOffset = (_vertical ? self.contentOffset.y : self.contentOffset.x);
-    
-    NSInteger firstLayoutPage = contentOffset / pageSize;
-    NSInteger lastLayoutPage = (contentOffset + pageSize - 1) / pageSize;
-    
-    NSUInteger firstVisiblePage = MAX((NSInteger)_firstPageInLayout + firstLayoutPage, 0);
-    NSUInteger lastVisiblePage = MIN((NSInteger)_firstPageInLayout + lastLayoutPage, (NSInteger)_numberOfPages - 1);
-    
-    CGFloat pageRatio = (contentOffset - floorf(contentOffset / pageSize) * pageSize) / pageSize;
-    
-    if (firstPtr) {
-        *firstPtr = firstVisiblePage;
-    }
-    if (lastPtr) {
-        *lastPtr = lastVisiblePage;
-    }
-    if (ratioPtr) {
-        *ratioPtr = pageRatio;
-    }
-}
-
 - (void)layoutVisiblePageDuringRotation
 {
     // Reset content area to display only current page
@@ -403,15 +378,24 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     self.contentOffset = CGPointZero;
     
     // There must be only one visible page at the moment
-    UIView *visiblePage = [_preloadedPages objectForKey:[NSNumber numberWithUnsignedInteger:_firstVisiblePage]];
+    UIView *pageView = [_preloadedPages objectForKey:[NSNumber numberWithUnsignedInteger:_firstVisiblePage]];
     
     // Center the single visible page in the scroll view
-    CGRect pageFrame = (_vertical
+    CGRect pageRect = (_vertical
                         ? CGRectInset(self.bounds, 0, _gapBetweenPages / 2)
                         : CGRectInset(self.bounds, _gapBetweenPages / 2, 0));
-    if (!CGRectEqualToRect(visiblePage.frame, pageFrame)) {
-        visiblePage.frame = pageFrame;
+    
+    // Expand nested BYPagingScrollView to hide the gap between its pages
+    if ([pageView isKindOfClass:[BYPagingScrollView class]]) {
+        BYPagingScrollView *nestedScrollView = (BYPagingScrollView *)pageView;
+        CGFloat inset = - nestedScrollView.gapBetweenPages / 2;
+        pageRect = (nestedScrollView.vertical
+                    ? CGRectInset(pageRect, 0, inset)
+                    : CGRectInset(pageRect, inset, 0));
     }
+    
+    if (!CGRectEqualToRect(pageView.frame, pageRect))
+        pageView.frame = pageRect;
 }
 
 - (id)pageViewAtIndex:(NSUInteger)pageIndex
@@ -425,55 +409,40 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
     // Set flag that should be used for better rotation handling
     _rotating = YES;
     
-    // Calculate visible pages
-    NSUInteger firstVisiblePage = kPageIndexNone, lastVisiblePage = kPageIndexNone;
-    CGFloat visiblePageRatio = 0;
-    [self getFirstVisiblePage:&firstVisiblePage lastVisiblePage:&lastVisiblePage pageRatio:&visiblePageRatio];
-    
     // Focus on the page taking more space on the screen
-    NSUInteger newVisiblePage = (visiblePageRatio < 0.5 ? lastVisiblePage : firstVisiblePage);
-    _firstVisiblePage = _lastVisiblePage = newVisiblePage;
+    _firstVisiblePage = _lastVisiblePage = _mostVisiblePage;
     
     // Remove all preloaded pages but visible
     [self enumeratePreloadedPagesUsingBlock:^(NSUInteger pageIndex, UIView *pageView) {
         
-        if ((pageIndex != _firstVisiblePage) && (pageIndex != _lastVisiblePage)) {
-            
+        if (pageIndex != _mostVisiblePage)
             [self makeReusablePageAtIndex:pageIndex];
-        }
     }];
     
     // Center the single visible page
     [self layoutVisiblePageDuringRotation];
     
-    // Notify the page source about a new focused page
-    self.currentPageIndex = newVisiblePage;
-    
     // Nested scroll view should be also notified about rotation
-    id nestedScrollView = [self pageViewAtIndex:newVisiblePage];
-    if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
+    id nestedScrollView = [self pageViewAtIndex:_mostVisiblePage];
+    if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]])
         [nestedScrollView beginTwoPartRotation];
-    }
 }
 
 - (void)layoutSubviews
 {
     // Apply custom layout during rotation
-    if (_rotating) {
+    if (_rotating)
         [self layoutVisiblePageDuringRotation];
-    }
-    else {
+    else
         [super layoutSubviews];
-    }
 }
 
 - (void)endTwoPartRotation
 {
     // Nested scroll view should be notified explicitly
     id nestedScrollView = [self pageViewAtIndex:_mostVisiblePage];
-    if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]]) {
+    if ([nestedScrollView isKindOfClass:[BYPagingScrollView class]])
         [nestedScrollView endTwoPartRotation];
-    }
         
     // Reset flag used for better rotation handling
     _rotating = NO;
@@ -498,17 +467,13 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 - (void)setCurrentPageIndex:(NSUInteger)currentPageIndex
 {
     if (_mostVisiblePage != currentPageIndex) {
-        
-        // Remember the last visible page to notify the page source
-        NSUInteger lastPageIndex = _mostVisiblePage;
-        
-        // Perform a KVO-compliant update
-        if (lastPageIndex != kPageIndexNone) {
+        BOOL notifyAboutChanges = (_mostVisiblePage != kPageIndexNone);
+        if (notifyAboutChanges) {
             [self willChangeValueForKey:@"currentPageIndex"];
             [self willChangeValueForKey:@"currentPageView"];
         }
         _mostVisiblePage = currentPageIndex;
-        if (lastPageIndex != kPageIndexNone) {
+        if (notifyAboutChanges) {
             [self didChangeValueForKey:@"currentPageIndex"];
             [self didChangeValueForKey:@"currentPageView"];
         }
@@ -522,30 +487,47 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 #pragma mark - Handle scrolling by changing data model
 
+- (void)getFirstVisiblePage:(NSUInteger *)firstPtr lastVisiblePage:(NSUInteger *)lastPtr pageRatio:(CGFloat *)ratioPtr;
+{
+    // Instruments -> self.bounds is faster than self.frame
+    CGFloat pageSize = (_vertical ? CGRectGetHeight(self.bounds) : CGRectGetWidth(self.bounds));
+    CGFloat contentOffset = (_vertical ? self.contentOffset.y : self.contentOffset.x);
+    
+    NSInteger firstLayoutPage = contentOffset / pageSize;
+    NSInteger lastLayoutPage = (contentOffset + pageSize - 1) / pageSize;
+    
+    NSUInteger firstVisiblePage = MAX((NSInteger)_firstPageInLayout + firstLayoutPage, 0);
+    NSUInteger lastVisiblePage = MIN((NSInteger)_firstPageInLayout + lastLayoutPage, (NSInteger)_numberOfPages - 1);
+    
+    CGFloat pageRatio = (pageSize * lastLayoutPage - contentOffset) / pageSize;
+    
+    if (firstPtr)
+        *firstPtr = firstVisiblePage;
+    if (lastPtr)
+        *lastPtr = lastVisiblePage;
+    if (ratioPtr)
+        *ratioPtr = pageRatio;
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    // Custom rotation plays with scroll offset, but we should not react on that
-    if (_rotating) {
-        return;
-    }
+    if (_rotating) return; // Do no change the data model during rotation
     
     // Calculate visible page indexes to update model
-    NSUInteger firstVisiblePage = kPageIndexNone, lastVisiblePage = kPageIndexNone;
-    CGFloat visiblePageRatio = 0;
-    [self getFirstVisiblePage:&firstVisiblePage lastVisiblePage:&lastVisiblePage pageRatio:&visiblePageRatio];
+    NSUInteger newFirstVisiblePage = kPageIndexNone, newLastVisiblePage = kPageIndexNone;
+    CGFloat newPageRatio = 0;
+    [self getFirstVisiblePage:&newFirstVisiblePage lastVisiblePage:&newLastVisiblePage pageRatio:&newPageRatio];
     
-    if (((visiblePageRatio < 0.5) && (lastVisiblePage > _lastVisiblePage)) ||
-        ((visiblePageRatio > 0.5) && (firstVisiblePage < _firstVisiblePage))) {
-        
-        return; // Scrolling does not worth changes when less than half of the page is scrolled
-    }
+    BOOL scrollsBackward = (newFirstVisiblePage < _firstVisiblePage);
+    BOOL scrollsForward = (newLastVisiblePage > _lastVisiblePage);
+    BOOL lessThanHalfOfTheFirstPageIsVisible = (newPageRatio < 0.5 - FLT_EPSILON);
+    BOOL lessThanHalfOfTheLastPageIsVisible = (newPageRatio > 0.5 + FLT_EPSILON);
+    if ((lessThanHalfOfTheFirstPageIsVisible && scrollsBackward) || (lessThanHalfOfTheLastPageIsVisible && scrollsForward)) return;
     
-    // Update model and layout if visible pages have beed changed
-    if ((_firstVisiblePage != firstVisiblePage) ||
-        (_lastVisiblePage != lastVisiblePage)) {
-        
-        _firstVisiblePage = firstVisiblePage;
-        _lastVisiblePage = lastVisiblePage;
+    // Update model to load appropriate pages
+    if ((_firstVisiblePage != newFirstVisiblePage) || (_lastVisiblePage != newLastVisiblePage)) {
+        _firstVisiblePage = newFirstVisiblePage;
+        _lastVisiblePage = newLastVisiblePage;
         
         // Recycle too far pages
         [self collectPagesForReusing];
@@ -558,10 +540,13 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         
         // Add new pages to the scroll view
         [self layoutPreloadedPages];
-        
-        // Notify the page source about a new focused page
-        self.currentPageIndex = (visiblePageRatio < 0.5 ? _lastVisiblePage : _firstVisiblePage);
     }
+    
+    // Notify the page source about a new focused page
+    if (lessThanHalfOfTheFirstPageIsVisible)
+        self.currentPageIndex = newLastVisiblePage;
+    else if (lessThanHalfOfTheLastPageIsVisible)
+        self.currentPageIndex = newFirstVisiblePage;
 }
 
 @end
