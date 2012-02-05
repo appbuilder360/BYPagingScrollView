@@ -18,12 +18,14 @@
         self.bouncesZoom = YES;
         self.decelerationRate = UIScrollViewDecelerationRateFast;
         self.contentSize = frame.size;
-        self.minimumZoomScale = .25;
-        self.maximumZoomScale = 8;
-        self.zoomScale = 1;
         self.backgroundColor = [UIColor blackColor];
         self.opaque = YES;
         self.canCancelContentTouches = NO;
+        
+        _textView = [[UIView alloc] initWithFrame:(CGRect){ CGPointZero, self.contentSize }];
+        _textView.contentMode = UIViewContentModeCenter;
+        _textView.backgroundColor = [UIColor colorWithWhite:.75 alpha:1];
+        [self addSubview:_textView];
         
         _textLayer = [[CATextLayer alloc] init];
         _textLayer.contentsGravity = kCAGravityCenter;
@@ -31,16 +33,15 @@
         _textLayer.wrapped = YES;
         _textLayer.truncationMode = kCATruncationNone;
         _textLayer.string = @"ABCD";
-        _textLayer.fontSize = 200;
-        _textLayer.bounds = CGRectMake(0, 0, 500, 200);
+        _textLayer.fontSize = 300;
+        _textLayer.bounds = CGRectMake(0, 0, 600, 250);
         _textLayer.foregroundColor = [UIColor colorWithWhite:.45 alpha:1].CGColor;
-        _textLayer.position = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
-        
-        _textView = [[UIView alloc] initWithFrame:self.bounds];
-        _textView.contentMode = UIViewContentModeCenter;
-        _textView.backgroundColor = [UIColor colorWithWhite:.75 alpha:1];
+        _textLayer.position = CGPointMake(CGRectGetWidth(frame) / 2, CGRectGetHeight(frame) / 2);
         [_textView.layer addSublayer:_textLayer];
-        [self addSubview:_textView];
+        
+        self.minimumZoomScale = 0.25;
+        self.maximumZoomScale = 4;
+        self.zoomScale = 1;
     }
     return self;
 }
@@ -86,7 +87,6 @@
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView
 {
-    return;
     [CATransaction setDisableActions:YES];
     self.textLayer.contentsScale = scrollView.zoomScale;
     [CATransaction setDisableActions:NO];
