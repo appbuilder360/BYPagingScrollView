@@ -1,4 +1,5 @@
 #import "PagingViewController.h"
+#import "TextScrollView.h"
 
 #define USE_VERTICAL_SCROLLING_DIRECTION NO // Change to YES to change scrolling direction
 
@@ -80,26 +81,21 @@ void *kContextCurrentPageIndex = &kContextCurrentPageIndex;
 
 #pragma mark -
 
-- (UILabel *)labelDequeuedFromScrollView:(BYPagingScrollView *)scrollView
+- (TextScrollView *)textViewDequeuedFromScrollView:(BYPagingScrollView *)scrollView
 {
-    UILabel *label = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([UILabel class])];
-    if (label == nil) {
-        label = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
-        label.contentMode = UIViewContentModeCenter;
-        label.textAlignment = UITextAlignmentCenter;
-        label.font = [UIFont boldSystemFontOfSize:100];
-        label.textColor = [UIColor colorWithWhite:.45 alpha:1];
-        label.backgroundColor = [UIColor colorWithWhite:.75 alpha:1];
+    TextScrollView *textView = [scrollView dequeReusablePageViewWithClassName:NSStringFromClass([TextScrollView class])];
+    if (textView == nil) {
+        textView = [[[TextScrollView alloc] initWithFrame:self.view.bounds] autorelease];
     }
-    return label;
+    return textView;
 }
 
-- (void)configureLabel:(UILabel *)label forScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
+- (void)configureTextView:(TextScrollView *)textView forScrollView:(BYPagingScrollView *)scrollView usingPageIndex:(NSUInteger)pageIndex
 {
     if (scrollView == self.pagingScrollView)
-        label.text = [NSString stringWithFormat:@"%d", pageIndex + 1];
-    else // Nested scroll view
-        label.text = [NSString stringWithFormat:@"%d-%d", scrollView.tag, pageIndex + 1];
+        textView.text = [NSString stringWithFormat:@"%d", pageIndex + 1];
+    else // text view is a subview of a nested scroll view
+        textView.text = [NSString stringWithFormat:@"%d-%d", scrollView.tag, pageIndex + 1];
 }
 
 #pragma mark - Data source protocol for paging scroll view
@@ -113,15 +109,14 @@ void *kContextCurrentPageIndex = &kContextCurrentPageIndex;
 {
     // Each 3rd page is another nested paging scroll view 
     if ((scrollView == self.pagingScrollView) && (pageIndex % 3 == 0)) {
-        
         BYPagingScrollView *nestedScrollView = [self nestedScrollViewDequeuedFromScrollView:scrollView];
         [self configureNestedScrollView:nestedScrollView usingPageIndex:pageIndex];
         return nestedScrollView;
     }
     else {
-        UILabel *label = [self labelDequeuedFromScrollView:scrollView];
-        [self configureLabel:label forScrollView:scrollView usingPageIndex:pageIndex];
-        return label;
+        TextScrollView *textView = [self textViewDequeuedFromScrollView:scrollView];
+        [self configureTextView:textView forScrollView:scrollView usingPageIndex:pageIndex];
+        return textView;
     }
 }
 
