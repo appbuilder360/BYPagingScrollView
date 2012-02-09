@@ -10,7 +10,7 @@ Xcode 4.2, iOS 4.0
 
 * Import `BYPagingScrollView.h` and `BYPagingScrollView.m` into your project.
 
-* Create a control in the view controller and define the pageSource.
+* Create a control in the view controller and define the `pageSource`.
 
 Code:
 
