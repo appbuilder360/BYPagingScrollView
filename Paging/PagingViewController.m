@@ -107,7 +107,7 @@ void *kContextCurrentPageIndex = &kContextCurrentPageIndex;
 
 - (UIView *)scrollView:(BYPagingScrollView *)scrollView viewForPageAtIndex:(NSUInteger)pageIndex
 {
-    // Each 3rd page is another nested paging scroll view 
+    // Each 3rd page is another nested paging scroll view
     if ((scrollView == self.pagingScrollView) && (pageIndex % 3 == 0)) {
         BYPagingScrollView *nestedScrollView = [self nestedScrollViewDequeuedFromScrollView:scrollView];
         [self configureNestedScrollView:nestedScrollView usingPageIndex:pageIndex];

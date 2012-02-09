@@ -2,8 +2,7 @@
 
 @implementation TextScrollView
 
-@synthesize textView = _textView;
-@synthesize textLayer = _textLayer;
+@synthesize textLabel = _textLabel;
 
 #pragma mark -
 
@@ -17,39 +16,29 @@
         self.bounces = NO;
         self.bouncesZoom = YES;
         self.decelerationRate = UIScrollViewDecelerationRateFast;
-        self.contentSize = frame.size;
+        self.contentSize = CGSizeMake(CGRectGetWidth(frame) * 4, CGRectGetHeight(frame) * 4);
         self.backgroundColor = [UIColor blackColor];
         self.opaque = YES;
         self.canCancelContentTouches = NO;
         
-        _textView = [[UIView alloc] initWithFrame:(CGRect){ CGPointZero, self.contentSize }];
-        _textView.contentMode = UIViewContentModeCenter;
-        _textView.backgroundColor = [UIColor colorWithWhite:.75 alpha:1];
-        [self addSubview:_textView];
-        
-        _textLayer = [[CATextLayer alloc] init];
-        _textLayer.contentsGravity = kCAGravityCenter;
-        _textLayer.alignmentMode = kCAAlignmentCenter;
-        _textLayer.wrapped = YES;
-        _textLayer.truncationMode = kCATruncationNone;
-        _textLayer.string = @"ABCD";
-        _textLayer.fontSize = 300;
-        _textLayer.bounds = CGRectMake(0, 0, 600, 250);
-        _textLayer.foregroundColor = [UIColor colorWithWhite:.45 alpha:1].CGColor;
-        _textLayer.position = CGPointMake(CGRectGetWidth(frame) / 2, CGRectGetHeight(frame) / 2);
-        [_textView.layer addSublayer:_textLayer];
+        _textLabel = [[UILabel alloc] initWithFrame:(CGRect){ CGPointZero, self.contentSize }];
+        _textLabel.contentMode = UIViewContentModeCenter;
+        _textLabel.backgroundColor = [UIColor colorWithWhite:.75 alpha:1];
+        _textLabel.textAlignment = UITextAlignmentCenter;
+        _textLabel.font = [UIFont boldSystemFontOfSize:100];
+        _textLabel.textColor = [UIColor colorWithWhite:.45 alpha:1];
+        [self addSubview:_textLabel];
         
         self.minimumZoomScale = 0.25;
-        self.maximumZoomScale = 4;
-        self.zoomScale = 1;
+        self.maximumZoomScale = 1.0;
+        self.zoomScale = 0.25;
     }
     return self;
 }
 
 - (void)dealloc
 {
-    [_textView release];
-    [_textLayer release];
+    [_textLabel release];
     [super dealloc];
 }
 
@@ -61,7 +50,7 @@
     
     // Center content in the scroll view
     CGSize scrollSize = self.frame.size;
-    CGRect textRect = self.textView.frame;
+    CGRect textRect = self.textLabel.frame;
     
     if (CGRectGetWidth(textRect) < scrollSize.width)
         textRect.origin.x = round((scrollSize.width - CGRectGetWidth(textRect)) / 2);
@@ -73,37 +62,28 @@
     else
         textRect.origin.y = 0;
     
-    self.textView.frame = textRect;
+    self.textLabel.frame = textRect;
 }
 
 #pragma mark - Zoom In and Out will be applied to the text view
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
 {
-    return self.textView;
-}
-
-#pragma mark - Redraw text after Zoom gesture
-
-- (void)scrollViewDidZoom:(UIScrollView *)scrollView
-{
-    [CATransaction setDisableActions:YES];
-    self.textLayer.contentsScale = scrollView.zoomScale;
-    [CATransaction setDisableActions:NO];
+    return self.textLabel;
 }
 
 #pragma mark - Text property is backed by the text layer's string
 
 - (NSString *)text
 {
-    return self.textLayer.string;
+    return self.textLabel.text;
 }
 
 - (void)setText:(NSString *)text
 {
-    [CATransaction setDisableActions:YES];
-    self.textLayer.string = text;
-    [CATransaction setDisableActions:NO];
+    self.zoomScale = 0.25;
+    
+    self.textLabel.text = text;
 }
 
 @end

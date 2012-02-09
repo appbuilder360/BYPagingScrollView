@@ -4,9 +4,7 @@
 
 @interface TextScrollView : UIScrollView <UIScrollViewDelegate>
 
-@property (nonatomic, readonly) UIView *textView;
-@property (nonatomic, readonly) CATextLayer *textLayer;
-
+@property (nonatomic, readonly) UILabel *textLabel;
 @property (nonatomic, copy) NSString *text;
 
 @end
