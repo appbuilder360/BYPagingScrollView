@@ -19,11 +19,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		DD8B6F6C14C6F1F80096EEC5 /* Paging.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Paging.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD8B6F6C14C6F1F80096EEC5 /* BYPagingScrollView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BYPagingScrollView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD8B6F7014C6F1F80096EEC5 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		DD8B6F7214C6F1F80096EEC5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DD8B6F7414C6F1F80096EEC5 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		DD8B6F7814C6F1F80096EEC5 /* Paging-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Paging-Info.plist"; sourceTree = "<group>"; };
+		DD8B6F7814C6F1F80096EEC5 /* BYPagingScrollView-Info.plist */ = {isa = PBXFileReference; path = "BYPagingScrollView-Info.plist"; sourceTree = "<group>"; };
 		DD8B6F7A14C6F1F80096EEC5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DD8B6F7C14C6F1F80096EEC5 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		DD8B6F7E14C6F1F80096EEC5 /* Paging-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Paging-Prefix.pch"; sourceTree = "<group>"; };
@@ -66,7 +66,7 @@
 		DD8B6F6D14C6F1F80096EEC5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DD8B6F6C14C6F1F80096EEC5 /* Paging.app */,
+				DD8B6F6C14C6F1F80096EEC5 /* BYPagingScrollView.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -97,7 +97,7 @@
 		DD8B6F7714C6F1F80096EEC5 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				DD8B6F7814C6F1F80096EEC5 /* Paging-Info.plist */,
+				DD8B6F7814C6F1F80096EEC5 /* BYPagingScrollView-Info.plist */,
 				DD8B6F7914C6F1F80096EEC5 /* InfoPlist.strings */,
 				DD8B6F7C14C6F1F80096EEC5 /* main.m */,
 				DD8B6F7E14C6F1F80096EEC5 /* Paging-Prefix.pch */,
@@ -109,9 +109,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DD8B6F6B14C6F1F80096EEC5 /* Paging */ = {
+		DD8B6F6B14C6F1F80096EEC5 /* BYPagingScrollView */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DD8B6F8D14C6F1F80096EEC5 /* Build configuration list for PBXNativeTarget "Paging" */;
+			buildConfigurationList = DD8B6F8D14C6F1F80096EEC5 /* Build configuration list for PBXNativeTarget "BYPagingScrollView" */;
 			buildPhases = (
 				DD8B6F6814C6F1F80096EEC5 /* Sources */,
 				DD8B6F6914C6F1F80096EEC5 /* Frameworks */,
@@ -121,9 +121,9 @@
 			);
 			dependencies = (
 			);
-			name = Paging;
+			name = BYPagingScrollView;
 			productName = Paging;
-			productReference = DD8B6F6C14C6F1F80096EEC5 /* Paging.app */;
+			productReference = DD8B6F6C14C6F1F80096EEC5 /* BYPagingScrollView.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -134,7 +134,7 @@
 			attributes = {
 				LastUpgradeCheck = 0420;
 			};
-			buildConfigurationList = DD8B6F6614C6F1F70096EEC5 /* Build configuration list for PBXProject "Paging" */;
+			buildConfigurationList = DD8B6F6614C6F1F70096EEC5 /* Build configuration list for PBXProject "BYPagingScrollView" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -146,7 +146,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DD8B6F6B14C6F1F80096EEC5 /* Paging */,
+				DD8B6F6B14C6F1F80096EEC5 /* BYPagingScrollView */,
 			);
 		};
 /* End PBXProject section */
@@ -242,9 +242,9 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Paging/Paging-Prefix.pch";
-				INFOPLIST_FILE = "Paging/Paging-Info.plist";
+				INFOPLIST_FILE = "Paging/BYPagingScrollView-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = BYPagingScrollView;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				WRAPPER_EXTENSION = app;
 			};
@@ -259,9 +259,9 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Paging/Paging-Prefix.pch";
-				INFOPLIST_FILE = "Paging/Paging-Info.plist";
+				INFOPLIST_FILE = "Paging/BYPagingScrollView-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = BYPagingScrollView;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				WRAPPER_EXTENSION = app;
 			};
@@ -270,7 +270,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DD8B6F6614C6F1F70096EEC5 /* Build configuration list for PBXProject "Paging" */ = {
+		DD8B6F6614C6F1F70096EEC5 /* Build configuration list for PBXProject "BYPagingScrollView" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DD8B6F8B14C6F1F80096EEC5 /* Debug */,
@@ -279,7 +279,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DD8B6F8D14C6F1F80096EEC5 /* Build configuration list for PBXNativeTarget "Paging" */ = {
+		DD8B6F8D14C6F1F80096EEC5 /* Build configuration list for PBXNativeTarget "BYPagingScrollView" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DD8B6F8E14C6F1F80096EEC5 /* Debug */,

@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:Paging.xcodeproj">
+      location = "group:BYPagingScrollView.xcodeproj">
    </FileRef>
 </Workspace>
