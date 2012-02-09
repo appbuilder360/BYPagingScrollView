@@ -23,7 +23,7 @@
 		DD8B6F7014C6F1F80096EEC5 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		DD8B6F7214C6F1F80096EEC5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DD8B6F7414C6F1F80096EEC5 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		DD8B6F7814C6F1F80096EEC5 /* BYPagingScrollView-Info.plist */ = {isa = PBXFileReference; path = "BYPagingScrollView-Info.plist"; sourceTree = "<group>"; };
+		DD8B6F7814C6F1F80096EEC5 /* BYPagingScrollView-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "BYPagingScrollView-Info.plist"; sourceTree = "<group>"; };
 		DD8B6F7A14C6F1F80096EEC5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DD8B6F7C14C6F1F80096EEC5 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		DD8B6F7E14C6F1F80096EEC5 /* Paging-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Paging-Prefix.pch"; sourceTree = "<group>"; };
