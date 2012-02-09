@@ -23,6 +23,7 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 {
     self = [super initWithFrame:frame];
     if (self) {
+        self.opaque = YES;
         self.pagingEnabled = YES;
         self.showsHorizontalScrollIndicator = NO;
         self.showsVerticalScrollIndicator = NO;
