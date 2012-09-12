@@ -312,6 +312,11 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 
 - (void)reloadPages
 {
+    
+    
+    
+    
+    
     // Remove all subviews
     [self makeReusableAllPreloadedPages];
     
