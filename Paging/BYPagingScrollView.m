@@ -313,10 +313,6 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
 - (void)reloadPages
 {
     
-    
-    
-    
-    
     // Remove all subviews
     [self makeReusableAllPreloadedPages];
     
@@ -553,6 +549,29 @@ const NSUInteger kPageIndexNone = NSNotFound; // Used to identify initial state
         self.currentPageIndex = newLastVisiblePage;
     else if (lessThanHalfOfTheLastPageIsVisible)
         self.currentPageIndex = newFirstVisiblePage;
+}
+
+-(void)scrollToPageIndex:(int)page {
+    // Update model to load appropriate pages
+    if ((_firstVisiblePage != page) || (_lastVisiblePage != page)) {
+        _lastVisiblePage = page;
+        _firstVisiblePage = page;
+        
+        // Recycle too far pages
+        [self collectPagesForReusing];
+        
+        // Preload new pages to display soon
+        [self preloadRequiredPages];
+        
+        // Adjust content area for the new model
+        [self adjustContentSizeAndOffsetIfNeeded];
+        
+        // Add new pages to the scroll view
+        [self layoutPreloadedPages];
+        
+        self.currentPageIndex = _firstVisiblePage;
+
+    }
 }
 
 @end

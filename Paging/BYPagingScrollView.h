@@ -40,7 +40,7 @@
 // To keep a page layout consistent, rotation must be performed explicitly
 - (void)beginTwoPartRotation; // Must be called from -[UIViewController willRotateToInterfaceOrientation:duration:]
 - (void)endTwoPartRotation;   // Must be called from -[UIViewController didRotateFromInterfaceOrientation:]
-
+-( void)scrollToPageIndex:(int)page;
 @end
 
 #pragma mark -
